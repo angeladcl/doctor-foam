@@ -429,7 +429,7 @@ export default function AdminDashboardPage() {
                                 <option value="Ceramic + Graphene Shield">Ceramic + Graphene Shield</option>
                                 <option value="Foam Maintenance">Foam Maintenance</option>
                             </select>
-                            <input placeholder="Teléfono / WhatsApp" value={newBooking.customer_phone} onChange={(e) => setNewBooking({ ...newBooking, customer_phone: e.target.value })} style={modalInputStyle} />
+                            <input placeholder="Teléfono" value={newBooking.customer_phone} onChange={(e) => setNewBooking({ ...newBooking, customer_phone: e.target.value })} style={modalInputStyle} />
                             <input placeholder="Vehículo (marca, modelo, color)" value={newBooking.vehicle_info} onChange={(e) => setNewBooking({ ...newBooking, vehicle_info: e.target.value })} style={modalInputStyle} />
                             <textarea placeholder="Notas" value={newBooking.notes} onChange={(e) => setNewBooking({ ...newBooking, notes: e.target.value })} style={{ ...modalInputStyle, minHeight: "60px", resize: "vertical" as const }} />
                         </div>
@@ -487,11 +487,9 @@ export default function AdminDashboardPage() {
                         </div>
                         <div style={{ display: "flex", gap: "0.75rem" }}>
                             <button onClick={() => setShowDetailModal(null)} style={{ ...modalBtnStyle, flex: 2, background: "rgba(15, 34, 64, 0.6)", color: "#94a3b8" }}>Cerrar</button>
-                            {showDetailModal.customer_phone && (
-                                <a href={`https://wa.me/${showDetailModal.customer_phone.replace(/\D/g, "")}?text=Hola ${showDetailModal.customer_name}, soy de Doctor Foam.`} target="_blank" rel="noopener noreferrer" style={{ ...modalBtnStyle, flex: 1, background: "rgba(37, 211, 102, 0.15)", color: "#25d366", textDecoration: "none", textAlign: "center", border: "1px solid rgba(37,211,102,0.3)" }}>
-                                    WhatsApp
-                                </a>
-                            )}
+                            <Link href="/admin/mensajes" style={{ ...modalBtnStyle, flex: 1, background: "rgba(37, 99, 235, 0.15)", color: "#60a5fa", textDecoration: "none", textAlign: "center", border: "1px solid rgba(59,130,246,0.3)" }}>
+                                💬 Chat
+                            </Link>
                             <button onClick={() => handleCancelBooking(showDetailModal.id)} style={{ ...modalBtnStyle, flex: 1, background: "rgba(239, 68, 68, 0.15)", color: "#f87171", border: "1px solid rgba(239,68,68,0.3)" }}>Cancelar</button>
                         </div>
                     </div>

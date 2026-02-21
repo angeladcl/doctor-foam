@@ -81,7 +81,7 @@ function SuccessContent() {
                             }}
                         >
                             Tu pago ha sido procesado exitosamente. En las próximas horas, un
-                            asesor de ventas de Doctor Foam se comunicará contigo por WhatsApp
+                            asesor de ventas de Doctor Foam se comunicará contigo por nuestro chat interno
                             para{" "}
                             <strong style={{ color: "white" }}>
                                 agendar día y hora de tu servicio
@@ -117,7 +117,7 @@ function SuccessContent() {
                                     },
                                     {
                                         step: "2",
-                                        title: "Te contactamos por WhatsApp",
+                                        title: "Te contactamos por chat",
                                         desc: "Un asesor de Doctor Foam se comunicará contigo en máximo 4 horas hábiles.",
                                     },
                                     {
@@ -198,14 +198,9 @@ function SuccessContent() {
                             <Link href="/" className="btn-premium">
                                 Volver al inicio
                             </Link>
-                            <a
-                                href="https://wa.me/5215500000000?text=Hola%2C%20acabo%20de%20realizar%20mi%20pago%20en%20Doctor%20Foam%20y%20quiero%20agendar%20mi%20servicio."
-                                className="btn-outline"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                💬 WhatsApp directo
-                            </a>
+                            <Link href="/mi-cuenta/chat" className="btn-outline">
+                                💬 Ir al chat
+                            </Link>
                         </div>
                     </div>
                 </section>

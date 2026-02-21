@@ -589,11 +589,11 @@ function BookingForm() {
                 </div>
             )}
 
-            {/* WhatsApp */}
+            {/* Chat */}
             <div style={{ textAlign: "center", marginTop: "2rem" }}>
                 <p style={{ color: "#64748b", fontSize: "0.9rem", marginBottom: "0.75rem" }}>¿Tienes dudas?</p>
-                <a href="https://wa.me/5215500000000?text=Hola%20Doctor%20Foam%2C%20tengo%20una%20duda%20sobre%20los%20servicios." className="btn-outline" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex" }}>
-                    💬 WhatsApp para dudas
+                <a href="/mi-cuenta/chat" className="btn-outline" style={{ display: "inline-flex" }}>
+                    💬 Escríbenos por chat
                 </a>
             </div>
         </form>

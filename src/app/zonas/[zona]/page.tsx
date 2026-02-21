@@ -256,14 +256,12 @@ export default async function ZonePage({ params }: PageProps) {
                         <p style={{ color: "#94a3b8", marginBottom: "2rem" }}>
                             Agenda tu cita y lleva la experiencia Doctor Foam a la puerta de tu casa.
                         </p>
-                        <a
-                            href="https://wa.me/5215500000000?text=Hola%20Doctor%20Foam%2C%20estoy%20en%20{z.name}%20y%20me%20interesa%20agendar%20un%20servicio."
+                        <Link
+                            href="/reservar"
                             className="btn-premium"
-                            target="_blank"
-                            rel="noopener noreferrer"
                         >
                             Agendar en {z.name}
-                        </a>
+                        </Link>
                     </div>
                 </section>
 

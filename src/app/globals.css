@@ -605,39 +605,39 @@ h6 {
   letter-spacing: 0.1em;
 }
 
-/* WhatsApp float */
-.whatsapp-float {
+/* Chat float */
+.chat-float {
   position: fixed;
   bottom: 2rem;
   right: 2rem;
   z-index: 900;
   width: 3.5rem;
   height: 3.5rem;
-  background: #25d366;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
   transition: all 0.3s ease;
   text-decoration: none;
-  animation: pulse-whatsapp 2s infinite;
+  animation: pulse-chat 2s infinite;
 }
 
-.whatsapp-float:hover {
+.chat-float:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 30px rgba(37, 211, 102, 0.6);
+  box-shadow: 0 6px 30px rgba(37, 99, 235, 0.6);
 }
 
-@keyframes pulse-whatsapp {
+@keyframes pulse-chat {
 
   0%,
   100% {
-    box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+    box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
   }
 
   50% {
-    box-shadow: 0 4px 40px rgba(37, 211, 102, 0.6);
+    box-shadow: 0 4px 40px rgba(37, 99, 235, 0.6);
   }
 }
 
