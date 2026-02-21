@@ -1,0 +1,25 @@
+<svg viewBox="0 0 400 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d4a853"/>
+      <stop offset="50%" stop-color="#e5c478"/>
+      <stop offset="100%" stop-color="#d4a853"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Foam bubbles icon -->
+  <circle cx="30" cy="50" r="24" fill="url(#goldGrad)" opacity="0.9"/>
+  <circle cx="30" cy="50" r="18" fill="none" stroke="#0a1628" stroke-width="3"/>
+  <circle cx="48" cy="30" r="10" fill="url(#goldGrad)" opacity="0.7"/>
+  <circle cx="52" cy="65" r="8" fill="url(#goldGrad)" opacity="0.5"/>
+  <path d="M20 42 L24 38 L28 42 L24 46Z" fill="#fff" opacity="0.8"/>
+
+  <!-- DOCTOR text -->
+  <text x="80" y="42" font-family="Outfit, sans-serif" font-weight="800" font-size="28" fill="#ffffff" letter-spacing="0.12em">DOCTOR</text>
+
+  <!-- FOAM text -->
+  <text x="80" y="78" font-family="Outfit, sans-serif" font-weight="800" font-size="36" fill="url(#goldGrad)" letter-spacing="0.18em">FOAM</text>
+
+  <!-- Tagline -->
+  <text x="250" y="65" font-family="Inter, sans-serif" font-weight="400" font-size="10" fill="#64748b" letter-spacing="0.15em">PREMIUM DETAILING</text>
+</svg>
