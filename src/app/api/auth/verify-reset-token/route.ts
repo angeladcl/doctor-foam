@@ -18,11 +18,12 @@ export async function POST(request: NextRequest) {
             process.env.SUPABASE_SERVICE_ROLE_KEY!
         );
 
-        // Find the user
-        const { data: users } = await supabase.auth.admin.listUsers();
-        const user = users?.users?.find(u => u.email === email);
+        // Find the user using admin API with large page size
+        const { data: listData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+        const user = listData?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
 
         if (!user) {
+            console.error("[verify-reset] User not found for email:", email);
             return NextResponse.json({ error: "Enlace inválido o expirado" }, { status: 400 });
         }
 
@@ -31,10 +32,12 @@ export async function POST(request: NextRequest) {
         const tokenExpiry = user.user_metadata?.reset_token_expiry;
 
         if (!storedToken || storedToken !== token) {
+            console.error("[verify-reset] Token mismatch");
             return NextResponse.json({ error: "Enlace inválido o expirado" }, { status: 400 });
         }
 
         if (new Date(tokenExpiry) < new Date()) {
+            console.error("[verify-reset] Token expired");
             return NextResponse.json({ error: "El enlace ha expirado. Solicita uno nuevo." }, { status: 400 });
         }
 

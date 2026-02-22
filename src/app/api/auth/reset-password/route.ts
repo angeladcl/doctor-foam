@@ -20,11 +20,34 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // Check if user exists
-    const { data: users, error: listError } = await supabase.auth.admin.listUsers();
-    const user = users?.users?.find(u => u.email === email);
+    // Find user by querying auth.users directly via RPC (listUsers pagination may miss users)
+    const { data: userData, error: queryError } = await supabase
+      .from("users_view")
+      .select("id, email")
+      .eq("email", email)
+      .single();
 
-    if (!user) {
+    // If the view doesn't exist, fall back to admin API with filtering
+    let userId: string | null = null;
+    let userEmail: string | null = null;
+
+    if (userData && !queryError) {
+      userId = userData.id;
+      userEmail = userData.email;
+      console.log("[reset-password] Found user via view:", userId);
+    } else {
+      console.log("[reset-password] View query failed, trying admin API...", queryError?.message);
+      // Try admin listUsers with per_page to get all users  
+      const { data: listData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+      const found = listData?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
+      if (found) {
+        userId = found.id;
+        userEmail = found.email || null;
+        console.log("[reset-password] Found user via admin API:", userId);
+      }
+    }
+
+    if (!userId) {
       console.log("[reset-password] User not found, returning success anyway");
       // Don't reveal if user exists
       return NextResponse.json({ success: true });
@@ -34,10 +57,14 @@ export async function POST(request: NextRequest) {
     const resetToken = crypto.randomBytes(32).toString("hex");
     const resetExpiry = new Date(Date.now() + 3600000).toISOString(); // 1 hour
 
+    // Get current user metadata first
+    const { data: userDetails } = await supabase.auth.admin.getUserById(userId);
+    const currentMetadata = userDetails?.user?.user_metadata || {};
+
     // Store token in user metadata
-    const { error: updateError } = await supabase.auth.admin.updateUserById(user.id, {
+    const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
       user_metadata: {
-        ...user.user_metadata,
+        ...currentMetadata,
         reset_token: resetToken,
         reset_token_expiry: resetExpiry,
       },
@@ -49,13 +76,13 @@ export async function POST(request: NextRequest) {
     }
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-    const resetLink = `${siteUrl}/restablecer-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+    const resetLink = `${siteUrl}/restablecer-password?token=${resetToken}&email=${encodeURIComponent(userEmail || email)}`;
 
-    console.log("[reset-password] Sending reset email via Resend...");
+    console.log("[reset-password] Sending reset email via Resend to:", userEmail || email);
 
-    const { error: emailError } = await resend.emails.send({
+    const { data: emailData, error: emailError } = await resend.emails.send({
       from: "Doctor Foam <info@drfoam.com.mx>",
-      to: email,
+      to: userEmail || email,
       subject: "🔑 Restablecer tu contraseña — Doctor Foam",
       html: `
 <!DOCTYPE html>
@@ -87,7 +114,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Error al enviar el correo" }, { status: 500 });
     }
 
-    console.log("[reset-password] Email sent successfully to:", email);
+    console.log("[reset-password] Email sent successfully! Resend ID:", emailData?.id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[reset-password] Unexpected error:", error);
