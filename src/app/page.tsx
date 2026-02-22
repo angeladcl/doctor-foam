@@ -1010,11 +1010,11 @@ export default function HomePage() {
         <div className="footer-bottom">
           <p>&copy; {new Date().getFullYear()} Doctor Foam México. Todos los derechos reservados.</p>
           <p style={{ marginTop: "0.5rem" }}>
-            <Link href="/aviso-de-privacidad" style={{ color: "#475569", textDecoration: "underline" }}>
+            <Link href="/aviso-de-privacidad" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "underline" }}>
               Aviso de Privacidad
             </Link>
             {" · "}
-            <Link href="/blog" style={{ color: "#475569", textDecoration: "underline" }}>
+            <Link href="/blog" style={{ color: "rgba(255,255,255,0.5)", textDecoration: "underline" }}>
               Blog
             </Link>
           </p>
