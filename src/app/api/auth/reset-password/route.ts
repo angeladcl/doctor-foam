@@ -20,48 +20,49 @@ export async function POST(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // Find user by querying auth.users directly via RPC (listUsers pagination may miss users)
-    const { data: userData, error: queryError } = await supabase
-      .from("users_view")
-      .select("id, email")
-      .eq("email", email)
-      .single();
+    // Look up user ID directly via SQL (most reliable — bypasses GoTrue pagination bugs)
+    const { data: sqlUser, error: sqlError } = await supabase.rpc("get_user_id_by_email", {
+      lookup_email: email,
+    });
 
-    // If the view doesn't exist, fall back to admin API with filtering
     let userId: string | null = null;
-    let userEmail: string | null = null;
 
-    if (userData && !queryError) {
-      userId = userData.id;
-      userEmail = userData.email;
-      console.log("[reset-password] Found user via view:", userId);
+    if (sqlUser && !sqlError) {
+      userId = sqlUser;
+      console.log("[reset-password] Found user via RPC:", userId);
     } else {
-      console.log("[reset-password] View query failed, trying admin API...", queryError?.message);
-      // Try admin listUsers with per_page to get all users  
-      const { data: listData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
-      const found = listData?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
-      if (found) {
-        userId = found.id;
-        userEmail = found.email || null;
-        console.log("[reset-password] Found user via admin API:", userId);
+      console.log("[reset-password] RPC failed:", sqlError?.message, "— trying admin API");
+      // Fallback: try admin API
+      try {
+        const { data: listData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+        const found = listData?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
+        if (found) {
+          userId = found.id;
+          console.log("[reset-password] Found user via admin API:", userId);
+        }
+      } catch (adminErr) {
+        console.error("[reset-password] Admin API error:", adminErr);
       }
     }
 
     if (!userId) {
       console.log("[reset-password] User not found, returning success anyway");
-      // Don't reveal if user exists
       return NextResponse.json({ success: true });
     }
 
-    // Generate a secure token and store it as user metadata for verification
+    // Get current user data via getUserById (this works even when listUsers doesn't)
+    const { data: userDetails, error: getUserError } = await supabase.auth.admin.getUserById(userId);
+    if (getUserError || !userDetails?.user) {
+      console.error("[reset-password] getUserById failed:", getUserError?.message);
+      return NextResponse.json({ success: true });
+    }
+
+    // Generate a secure token
     const resetToken = crypto.randomBytes(32).toString("hex");
     const resetExpiry = new Date(Date.now() + 3600000).toISOString(); // 1 hour
 
-    // Get current user metadata first
-    const { data: userDetails } = await supabase.auth.admin.getUserById(userId);
-    const currentMetadata = userDetails?.user?.user_metadata || {};
-
     // Store token in user metadata
+    const currentMetadata = userDetails.user.user_metadata || {};
     const { error: updateError } = await supabase.auth.admin.updateUserById(userId, {
       user_metadata: {
         ...currentMetadata,
@@ -76,13 +77,13 @@ export async function POST(request: NextRequest) {
     }
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-    const resetLink = `${siteUrl}/restablecer-password?token=${resetToken}&email=${encodeURIComponent(userEmail || email)}`;
+    const resetLink = `${siteUrl}/restablecer-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
-    console.log("[reset-password] Sending reset email via Resend to:", userEmail || email);
+    console.log("[reset-password] Sending reset email via Resend to:", email);
 
     const { data: emailData, error: emailError } = await resend.emails.send({
       from: "Doctor Foam <info@drfoam.com.mx>",
-      to: userEmail || email,
+      to: email,
       subject: "🔑 Restablecer tu contraseña — Doctor Foam",
       html: `
 <!DOCTYPE html>
