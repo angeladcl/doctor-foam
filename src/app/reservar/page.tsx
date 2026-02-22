@@ -169,18 +169,18 @@ function Calendar({
                 style={{
                     width: "100%",
                     aspectRatio: "1",
-                    border: isSelected ? "2px solid #3b82f6" : "1px solid rgba(96, 165, 250, 0.1)",
+                    border: isSelected ? "2px solid #2563eb" : "1px solid #e2e8f0",
                     borderRadius: "0.5rem",
                     background: isSelected
-                        ? "linear-gradient(135deg, #3b82f6, #1d4ed8)"
+                        ? "linear-gradient(135deg, #2563eb, #3b82f6)"
                         : isOccupied
-                            ? "rgba(239, 68, 68, 0.15)"
+                            ? "rgba(239, 68, 68, 0.08)"
                             : isPast || isSunday
-                                ? "rgba(15, 23, 42, 0.3)"
-                                : "rgba(15, 34, 64, 0.4)",
-                    color: isSelected ? "white" : isDisabled ? "#475569" : isOccupied ? "#f87171" : "#e2e8f0",
+                                ? "#f1f5f9"
+                                : "#ffffff",
+                    color: isSelected ? "#ffffff" : isDisabled ? "#94a3b8" : isOccupied ? "#ef4444" : "#0f172a",
                     cursor: isDisabled ? "not-allowed" : "pointer",
-                    fontWeight: isSelected || isToday ? 700 : 400,
+                    fontWeight: isSelected || isToday ? 700 : 500,
                     fontSize: "0.9rem",
                     display: "flex",
                     alignItems: "center",
@@ -191,7 +191,7 @@ function Calendar({
             >
                 {d}
                 {isToday && !isSelected && (
-                    <span style={{ position: "absolute", bottom: "3px", width: "4px", height: "4px", borderRadius: "50%", background: "#3b82f6" }} />
+                    <span style={{ position: "absolute", bottom: "3px", width: "4px", height: "4px", borderRadius: "50%", background: "#2563eb" }} />
                 )}
             </button>
         );
@@ -206,18 +206,18 @@ function Calendar({
                     onClick={goToPrev}
                     disabled={!canGoPrev}
                     style={{
-                        background: "none", border: "none", color: canGoPrev ? "#e2e8f0" : "#475569",
+                        background: "none", border: "none", color: canGoPrev ? "#0f172a" : "#cbd5e1",
                         cursor: canGoPrev ? "pointer" : "not-allowed", fontSize: "1.2rem", padding: "0.5rem",
                     }}
                 >
                     ←
                 </button>
-                <span style={{ fontFamily: "var(--font-heading)", fontWeight: 700, color: "white", fontSize: "1.05rem" }}>
+                <span style={{ fontFamily: "var(--font-heading)", fontWeight: 700, color: "#0f172a", fontSize: "1.05rem" }}>
                     {monthNames[currentMonth]} {currentYear}
                 </span>
                 <button
                     type="button" onClick={goToNext}
-                    style={{ background: "none", border: "none", color: "#e2e8f0", cursor: "pointer", fontSize: "1.2rem", padding: "0.5rem" }}
+                    style={{ background: "none", border: "none", color: "#0f172a", cursor: "pointer", fontSize: "1.2rem", padding: "0.5rem" }}
                 >
                     →
                 </button>
@@ -241,17 +241,17 @@ function Calendar({
             </div>
 
             {/* Legend */}
-            <div style={{ display: "flex", gap: "1rem", marginTop: "1rem", fontSize: "0.75rem", color: "#94a3b8", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "1rem", marginTop: "1rem", fontSize: "0.75rem", color: "#64748b", flexWrap: "wrap" }}>
                 <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                    <span style={{ width: "10px", height: "10px", borderRadius: "2px", background: "linear-gradient(135deg, #3b82f6, #1d4ed8)" }} />
+                    <span style={{ width: "10px", height: "10px", borderRadius: "2px", background: "linear-gradient(135deg, #2563eb, #3b82f6)" }} />
                     Seleccionado
                 </span>
                 <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                    <span style={{ width: "10px", height: "10px", borderRadius: "2px", background: "rgba(239, 68, 68, 0.3)" }} />
+                    <span style={{ width: "10px", height: "10px", borderRadius: "2px", background: "rgba(239, 68, 68, 0.15)", border: "1px solid rgba(239,68,68,0.3)" }} />
                     Ocupado
                 </span>
                 <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                    <span style={{ width: "10px", height: "10px", borderRadius: "2px", background: "rgba(15, 34, 64, 0.4)", border: "1px solid rgba(96,165,250,0.1)" }} />
+                    <span style={{ width: "10px", height: "10px", borderRadius: "2px", background: "#ffffff", border: "1px solid #e2e8f0" }} />
                     Disponible
                 </span>
             </div>
@@ -269,6 +269,7 @@ function BookingForm() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const cancelled = searchParams.get("cancelled");
+    const [hoveredPkg, setHoveredPkg] = useState<string | null>(null);
 
     /* Form fields */
     const [customerName, setCustomerName] = useState("");
@@ -349,12 +350,13 @@ function BookingForm() {
                         onClick={() => s.num < step && setStep(s.num)}
                         style={{
                             display: "flex", alignItems: "center", gap: "0.4rem",
-                            background: step === s.num ? "rgba(59, 130, 246, 0.15)" : step > s.num ? "rgba(16, 185, 129, 0.1)" : "rgba(15, 34, 64, 0.3)",
-                            border: step === s.num ? "1px solid rgba(59, 130, 246, 0.4)" : "1px solid rgba(96, 165, 250, 0.1)",
+                            background: step === s.num ? "rgba(37, 99, 235, 0.1)" : step > s.num ? "rgba(16, 185, 129, 0.08)" : "#f1f5f9",
+                            border: step === s.num ? "1.5px solid #2563eb" : step > s.num ? "1.5px solid #10b981" : "1.5px solid #e2e8f0",
                             borderRadius: "2rem", padding: "0.5rem 1rem",
-                            color: step === s.num ? "#60a5fa" : step > s.num ? "#34d399" : "#64748b",
+                            color: step === s.num ? "#2563eb" : step > s.num ? "#10b981" : "#94a3b8",
                             fontSize: "0.8rem", fontWeight: 600, cursor: s.num < step ? "pointer" : "default",
                             fontFamily: "var(--font-heading)",
+                            transition: "all 0.3s ease",
                         }}
                     >
                         {step > s.num ? "✓" : s.num}
@@ -364,12 +366,12 @@ function BookingForm() {
             </div>
 
             {cancelled && (
-                <div style={{ background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: "0.75rem", padding: "1rem 1.5rem", marginBottom: "2rem", color: "#fca5a5", fontSize: "0.9rem" }}>
+                <div style={{ background: "rgba(239, 68, 68, 0.06)", border: "1px solid rgba(239, 68, 68, 0.2)", borderRadius: "0.75rem", padding: "1rem 1.5rem", marginBottom: "2rem", color: "#dc2626", fontSize: "0.9rem" }}>
                     El pago fue cancelado. Puedes intentar de nuevo.
                 </div>
             )}
             {error && (
-                <div style={{ background: "rgba(239, 68, 68, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: "0.75rem", padding: "1rem 1.5rem", marginBottom: "2rem", color: "#fca5a5", fontSize: "0.9rem" }}>
+                <div style={{ background: "rgba(239, 68, 68, 0.06)", border: "1px solid rgba(239, 68, 68, 0.2)", borderRadius: "0.75rem", padding: "1rem 1.5rem", marginBottom: "2rem", color: "#dc2626", fontSize: "0.9rem" }}>
                     {error}
                 </div>
             )}
@@ -377,45 +379,81 @@ function BookingForm() {
             {/* ─── STEP 1: Package + Vehicle Size ─── */}
             {step === 1 && (
                 <div className="glass-card" style={{ padding: "2rem" }}>
-                    <h2 style={{ fontSize: "1.2rem", marginBottom: "1.25rem" }}>1. Selecciona tu servicio</h2>
+                    <h2 style={{ fontSize: "1.2rem", marginBottom: "1.25rem", color: "#0f172a" }}>1. Selecciona tu servicio</h2>
 
                     <div style={{ display: "grid", gap: "0.75rem", marginBottom: "1.5rem" }}>
-                        {Object.entries(packagesData).map(([key, p]) => (
-                            <button
-                                key={key} type="button" onClick={() => setSelectedPackage(key)}
-                                style={{
-                                    padding: "1.25rem", borderRadius: "0.75rem",
-                                    border: selectedPackage === key ? "2px solid #3b82f6" : "1px solid rgba(96, 165, 250, 0.15)",
-                                    background: selectedPackage === key ? "rgba(59, 130, 246, 0.1)" : "rgba(15, 34, 64, 0.4)",
-                                    cursor: "pointer", textAlign: "left", color: "white", transition: "all 0.2s",
-                                    display: "flex", justifyContent: "space-between", alignItems: "center",
-                                }}
-                            >
-                                <div>
-                                    <div style={{ fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "1rem" }}>{p.name}</div>
-                                    <div style={{ color: "#94a3b8", fontSize: "0.8rem", marginTop: "0.2rem" }}>{p.label}</div>
-                                </div>
-                                <div className="gradient-text" style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "1.2rem", whiteSpace: "nowrap" }}>
-                                    ${p.priceBase.toLocaleString("es-MX")}
-                                </div>
-                            </button>
-                        ))}
+                        {Object.entries(packagesData).map(([key, p]) => {
+                            const isSelected = selectedPackage === key;
+                            const isHovered = hoveredPkg === key;
+                            return (
+                                <button
+                                    key={key} type="button"
+                                    onClick={() => setSelectedPackage(key)}
+                                    onMouseEnter={() => setHoveredPkg(key)}
+                                    onMouseLeave={() => setHoveredPkg(null)}
+                                    style={{
+                                        padding: "1.25rem 1.5rem", borderRadius: "0.75rem",
+                                        border: isSelected ? "2px solid #2563eb" : "1.5px solid #e2e8f0",
+                                        background: isSelected
+                                            ? "linear-gradient(135deg, rgba(37,99,235,0.08), rgba(59,130,246,0.04))"
+                                            : isHovered
+                                                ? "#f8fafc"
+                                                : "#ffffff",
+                                        cursor: "pointer", textAlign: "left", color: "#0f172a",
+                                        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                                        display: "flex", justifyContent: "space-between", alignItems: "center",
+                                        transform: isSelected ? "scale(1.01)" : isHovered ? "translateY(-2px)" : "none",
+                                        boxShadow: isSelected
+                                            ? "0 4px 20px rgba(37,99,235,0.12)"
+                                            : isHovered
+                                                ? "0 4px 12px rgba(0,0,0,0.06)"
+                                                : "0 1px 3px rgba(0,0,0,0.04)",
+                                    }}
+                                >
+                                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                                        {/* Selection indicator */}
+                                        <div style={{
+                                            width: "20px", height: "20px", borderRadius: "50%", flexShrink: 0,
+                                            border: isSelected ? "none" : "2px solid #cbd5e1",
+                                            background: isSelected ? "linear-gradient(135deg, #2563eb, #3b82f6)" : "transparent",
+                                            display: "flex", alignItems: "center", justifyContent: "center",
+                                            transition: "all 0.3s ease",
+                                        }}>
+                                            {isSelected && (
+                                                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                                                    <path d="M2 5L4.5 7.5L8 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                </svg>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <div style={{ fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "1rem", color: isSelected ? "#1e40af" : "#0f172a" }}>{p.name}</div>
+                                            <div style={{ color: "#64748b", fontSize: "0.8rem", marginTop: "0.15rem" }}>{p.label}</div>
+                                        </div>
+                                    </div>
+                                    <div className="gradient-text" style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "1.2rem", whiteSpace: "nowrap" }}>
+                                        ${p.priceBase.toLocaleString("es-MX")}
+                                    </div>
+                                </button>
+                            );
+                        })}
                     </div>
 
-                    <h3 style={{ fontSize: "1rem", marginBottom: "0.75rem", color: "#cbd5e1" }}>Tamaño del vehículo</h3>
+                    <h3 style={{ fontSize: "1rem", marginBottom: "0.75rem", color: "#334155" }}>Tamaño del vehículo</h3>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem", marginBottom: "1.5rem" }}>
                         {vehicleSizes.map((v) => (
                             <button
                                 key={v.value} type="button" onClick={() => setVehicleSize(v.value)}
                                 style={{
                                     padding: "1rem", borderRadius: "0.75rem",
-                                    border: vehicleSize === v.value ? "2px solid #3b82f6" : "1px solid rgba(96, 165, 250, 0.15)",
-                                    background: vehicleSize === v.value ? "rgba(59, 130, 246, 0.1)" : "rgba(15, 34, 64, 0.4)",
-                                    cursor: "pointer", color: "white", textAlign: "center",
+                                    border: vehicleSize === v.value ? "2px solid #2563eb" : "1.5px solid #e2e8f0",
+                                    background: vehicleSize === v.value ? "rgba(37, 99, 235, 0.06)" : "#ffffff",
+                                    cursor: "pointer", color: "#0f172a", textAlign: "center",
+                                    transition: "all 0.3s ease",
+                                    boxShadow: vehicleSize === v.value ? "0 2px 12px rgba(37,99,235,0.1)" : "none",
                                 }}
                             >
-                                <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>{v.label}</div>
-                                <div style={{ color: "#94a3b8", fontSize: "0.75rem", marginTop: "0.25rem" }}>
+                                <div style={{ fontWeight: 600, fontSize: "0.9rem", color: vehicleSize === v.value ? "#1e40af" : "#0f172a" }}>{v.label}</div>
+                                <div style={{ color: "#64748b", fontSize: "0.75rem", marginTop: "0.25rem" }}>
                                     {v.coefficient === 1.0 ? "Precio base" : `+${Math.round((v.coefficient - 1) * 100)}% sobre precio base`}
                                 </div>
                             </button>
@@ -434,16 +472,16 @@ function BookingForm() {
             {/* ─── STEP 2: Calendar ─── */}
             {step === 2 && (
                 <div className="glass-card" style={{ padding: "2rem" }}>
-                    <h2 style={{ fontSize: "1.2rem", marginBottom: "0.5rem" }}>2. Elige la fecha de tu servicio</h2>
-                    <p style={{ color: "#94a3b8", fontSize: "0.85rem", marginBottom: "1.5rem" }}>
+                    <h2 style={{ fontSize: "1.2rem", marginBottom: "0.5rem", color: "#0f172a" }}>2. Elige la fecha de tu servicio</h2>
+                    <p style={{ color: "#64748b", fontSize: "0.85rem", marginBottom: "1.5rem" }}>
                         Atendemos de lunes a sábado. Los días en rojo ya están reservados.
                     </p>
                     <Calendar selectedDate={serviceDate} onSelectDate={setServiceDate} />
 
                     {serviceDate && (
-                        <div style={{ marginTop: "1.25rem", padding: "1rem", background: "rgba(59, 130, 246, 0.1)", borderRadius: "0.75rem", border: "1px solid rgba(59, 130, 246, 0.3)", textAlign: "center" }}>
-                            <span style={{ color: "#94a3b8", fontSize: "0.85rem" }}>Fecha seleccionada: </span>
-                            <span style={{ color: "white", fontWeight: 700 }}>
+                        <div style={{ marginTop: "1.25rem", padding: "1rem", background: "rgba(37, 99, 235, 0.06)", borderRadius: "0.75rem", border: "1px solid rgba(37, 99, 235, 0.15)", textAlign: "center" }}>
+                            <span style={{ color: "#64748b", fontSize: "0.85rem" }}>Fecha seleccionada: </span>
+                            <span style={{ color: "#0f172a", fontWeight: 700 }}>
                                 {new Date(serviceDate + "T12:00:00").toLocaleDateString("es-MX", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                             </span>
                         </div>
@@ -468,7 +506,7 @@ function BookingForm() {
             {step === 3 && (
                 <div>
                     <div className="glass-card" style={{ padding: "2rem", marginBottom: "1.5rem" }}>
-                        <h2 style={{ fontSize: "1.2rem", marginBottom: "1.25rem" }}>3. Tus datos de contacto</h2>
+                        <h2 style={{ fontSize: "1.2rem", marginBottom: "1.25rem", color: "#0f172a" }}>3. Tus datos de contacto</h2>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                             <div style={{ gridColumn: "span 2" }}>
                                 <label style={labelStyle}>Nombre completo *</label>
@@ -486,7 +524,7 @@ function BookingForm() {
                     </div>
 
                     <div className="glass-card" style={{ padding: "2rem", marginBottom: "1.5rem" }}>
-                        <h2 style={{ fontSize: "1.2rem", marginBottom: "1.25rem" }}>Datos del vehículo</h2>
+                        <h2 style={{ fontSize: "1.2rem", marginBottom: "1.25rem", color: "#0f172a" }}>Datos del vehículo</h2>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                             <div><label style={labelStyle}>Marca *</label><input type="text" placeholder="BMW, Mercedes..." value={vehicleBrand} onChange={(e) => setVehicleBrand(e.target.value)} style={inputStyle} required /></div>
                             <div><label style={labelStyle}>Modelo *</label><input type="text" placeholder="X5, Clase C..." value={vehicleModel} onChange={(e) => setVehicleModel(e.target.value)} style={inputStyle} required /></div>
@@ -496,7 +534,7 @@ function BookingForm() {
                     </div>
 
                     <div className="glass-card" style={{ padding: "2rem", marginBottom: "1.5rem" }}>
-                        <h2 style={{ fontSize: "1.2rem", marginBottom: "1.25rem" }}>Dirección del servicio</h2>
+                        <h2 style={{ fontSize: "1.2rem", marginBottom: "1.25rem", color: "#0f172a" }}>Dirección del servicio</h2>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
                             <div style={{ gridColumn: "span 2" }}>
                                 <label style={labelStyle}>Calle y número *</label>
@@ -513,10 +551,10 @@ function BookingForm() {
                     </div>
 
                     <div className="glass-card" style={{ padding: "2rem", marginBottom: "1.5rem" }}>
-                        <h2 style={{ fontSize: "1.2rem", marginBottom: "1rem" }}>Facturación</h2>
+                        <h2 style={{ fontSize: "1.2rem", marginBottom: "1rem", color: "#0f172a" }}>Facturación</h2>
                         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
-                            <input type="checkbox" id="needsFactura" checked={needsFactura} onChange={(e) => setNeedsFactura(e.target.checked)} style={{ width: "1.25rem", height: "1.25rem", accentColor: "#3b82f6" }} />
-                            <label htmlFor="needsFactura" style={{ color: "#cbd5e1", fontSize: "0.95rem", cursor: "pointer" }}>Requiero factura (CFDI)</label>
+                            <input type="checkbox" id="needsFactura" checked={needsFactura} onChange={(e) => setNeedsFactura(e.target.checked)} style={{ width: "1.25rem", height: "1.25rem", accentColor: "#2563eb" }} />
+                            <label htmlFor="needsFactura" style={{ color: "#334155", fontSize: "0.95rem", cursor: "pointer" }}>Requiero factura (CFDI)</label>
                         </div>
                         {needsFactura && (
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
@@ -541,8 +579,8 @@ function BookingForm() {
 
             {/* ─── STEP 4: Summary + Pay ─── */}
             {step === 4 && pkg && (
-                <div className="glass-card" style={{ padding: "2rem", borderColor: "rgba(59, 130, 246, 0.3)" }}>
-                    <h2 style={{ fontSize: "1.2rem", marginBottom: "1.5rem" }}>Resumen de tu reserva</h2>
+                <div className="glass-card" style={{ padding: "2rem", borderColor: "rgba(37, 99, 235, 0.15)" }}>
+                    <h2 style={{ fontSize: "1.2rem", marginBottom: "1.5rem", color: "#0f172a" }}>Resumen de tu reserva</h2>
 
                     <div style={{ display: "grid", gap: "0.75rem", marginBottom: "1.5rem" }}>
                         {[
@@ -553,24 +591,24 @@ function BookingForm() {
                             { label: "Dirección", value: `${address}, ${addressColonia}` },
                             { label: "Contacto", value: `${customerName} · ${customerPhone}` },
                         ].map((item) => (
-                            <div key={item.label} style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0", borderBottom: "1px solid rgba(96,165,250,0.1)" }}>
-                                <span style={{ color: "#94a3b8", fontSize: "0.85rem" }}>{item.label}</span>
-                                <span style={{ color: "white", fontSize: "0.9rem", fontWeight: 500, textAlign: "right", maxWidth: "60%" }}>{item.value}</span>
+                            <div key={item.label} style={{ display: "flex", justifyContent: "space-between", padding: "0.5rem 0", borderBottom: "1px solid #f1f5f9" }}>
+                                <span style={{ color: "#64748b", fontSize: "0.85rem" }}>{item.label}</span>
+                                <span style={{ color: "#0f172a", fontSize: "0.9rem", fontWeight: 500, textAlign: "right", maxWidth: "60%" }}>{item.value}</span>
                             </div>
                         ))}
                     </div>
 
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "1rem", background: "rgba(59, 130, 246, 0.1)", borderRadius: "0.75rem", marginBottom: "1.5rem" }}>
-                        <span style={{ fontFamily: "var(--font-heading)", fontWeight: 700, color: "white", fontSize: "1.1rem" }}>Total (IVA incluido)</span>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "1rem 1.25rem", background: "rgba(37, 99, 235, 0.06)", borderRadius: "0.75rem", marginBottom: "1.5rem", border: "1px solid rgba(37,99,235,0.1)" }}>
+                        <span style={{ fontFamily: "var(--font-heading)", fontWeight: 700, color: "#0f172a", fontSize: "1.1rem" }}>Total (IVA incluido)</span>
                         <span className="gradient-text" style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "1.5rem" }}>
                             ${currentPrice.toLocaleString("es-MX")} MXN
                         </span>
                     </div>
 
-                    <ul style={{ listStyle: "none", margin: "0 0 1.5rem", padding: 0, color: "#94a3b8", fontSize: "0.85rem" }}>
+                    <ul style={{ listStyle: "none", margin: "0 0 1.5rem", padding: 0, color: "#475569", fontSize: "0.85rem" }}>
                         {pkg.features.map((f, i) => (
                             <li key={i} style={{ paddingBlock: "0.25rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                                <span style={{ color: "#34d399" }}>✓</span> {f}
+                                <span style={{ color: "#10b981" }}>✓</span> {f}
                             </li>
                         ))}
                     </ul>
@@ -579,7 +617,7 @@ function BookingForm() {
                         {loading ? "Procesando..." : `🔒 Pagar $${currentPrice.toLocaleString("es-MX")} MXN`}
                     </button>
 
-                    <p style={{ color: "#64748b", fontSize: "0.8rem", textAlign: "center", marginTop: "1rem" }}>
+                    <p style={{ color: "#94a3b8", fontSize: "0.8rem", textAlign: "center", marginTop: "1rem" }}>
                         Pago seguro procesado por Stripe. Una vez confirmado, tu servicio queda agendado para la fecha seleccionada.
                     </p>
 
@@ -591,7 +629,7 @@ function BookingForm() {
 
             {/* Chat */}
             <div style={{ textAlign: "center", marginTop: "2rem" }}>
-                <p style={{ color: "#64748b", fontSize: "0.9rem", marginBottom: "0.75rem" }}>¿Tienes dudas?</p>
+                <p style={{ color: "#94a3b8", fontSize: "0.9rem", marginBottom: "0.75rem" }}>¿Tienes dudas?</p>
                 <a href="/mi-cuenta/chat" className="btn-outline" style={{ display: "inline-flex" }}>
                     💬 Escríbenos por chat
                 </a>
@@ -603,13 +641,14 @@ function BookingForm() {
 /* ─── Styles ─── */
 const labelStyle: React.CSSProperties = {
     display: "block", fontFamily: "var(--font-heading)", fontSize: "0.85rem",
-    fontWeight: 600, color: "#94a3b8", marginBottom: "0.4rem",
+    fontWeight: 600, color: "#334155", marginBottom: "0.4rem",
 };
 
 const inputStyle: React.CSSProperties = {
     width: "100%", padding: "0.75rem 1rem", borderRadius: "0.5rem",
-    border: "1px solid rgba(96, 165, 250, 0.2)", background: "rgba(10, 22, 40, 0.8)",
-    color: "white", fontSize: "0.95rem", fontFamily: "var(--font-body)", outline: "none",
+    border: "1.5px solid #e2e8f0", background: "#ffffff",
+    color: "#0f172a", fontSize: "0.95rem", fontFamily: "var(--font-body)", outline: "none",
+    transition: "border-color 0.2s ease",
 };
 
 /* ─── Main Page ─── */
@@ -619,11 +658,12 @@ export default function ReservarPage() {
             <nav className="navbar navbar-scrolled">
                 <div className="navbar-inner">
                     <Link href="/" style={{ textDecoration: "none" }}>
-                        <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "1.3rem", color: "white" }}>
-                            DOCTOR <span className="gradient-text">FOAM</span>
+                        <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "1.3rem" }}>
+                            <span style={{ color: "#0f172a" }}>DOCTOR</span>{" "}
+                            <span className="gradient-text">FOAM</span>
                         </span>
                     </Link>
-                    <Link href="/" style={{ color: "#94a3b8", textDecoration: "none", fontSize: "0.9rem", fontFamily: "var(--font-heading)" }}>
+                    <Link href="/" style={{ color: "#64748b", textDecoration: "none", fontSize: "0.9rem", fontFamily: "var(--font-heading)" }}>
                         ← Inicio
                     </Link>
                 </div>
@@ -643,7 +683,7 @@ export default function ReservarPage() {
                             </p>
                         </div>
 
-                        <Suspense fallback={<div style={{ textAlign: "center", padding: "2rem", color: "#94a3b8" }}>Cargando...</div>}>
+                        <Suspense fallback={<div style={{ textAlign: "center", padding: "2rem", color: "#64748b" }}>Cargando...</div>}>
                             <BookingForm />
                         </Suspense>
                     </div>
