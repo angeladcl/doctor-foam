@@ -642,6 +642,28 @@ h6 {
   }
 }
 
+/* Reviews infinite marquee */
+.reviews-marquee {
+  display: flex;
+  gap: 1.25rem;
+  animation: marquee-scroll 40s linear infinite;
+  width: max-content;
+}
+
+.reviews-marquee:hover {
+  animation-play-state: paused;
+}
+
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 /* Scroll animation base */
 .animate-on-scroll {
   opacity: 0;
