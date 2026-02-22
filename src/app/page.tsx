@@ -412,6 +412,7 @@ export default function HomePage() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [grapheneUpgrade, setGrapheneUpgrade] = useState(false);
 
   /* Scroll listener for navbar */
   useEffect(() => {
@@ -689,71 +690,87 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Vehicle category pricing table */}
-          <div className="glass-card animate-on-scroll" style={{ padding: "1.5rem", marginBottom: "2.5rem", maxWidth: "700px", marginLeft: "auto", marginRight: "auto" }}>
-            <h3 style={{ fontSize: "1rem", marginBottom: "1rem", textAlign: "center", fontFamily: "var(--font-heading)" }}>
-              Precios por categoría de vehículo
-            </h3>
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}>
-                <thead>
-                  <tr style={{ borderBottom: "1px solid rgba(37, 99, 235, 0.12)" }}>
-                    <th style={{ textAlign: "left", padding: "0.5rem", color: "#64748b", fontWeight: 600 }}>Servicio</th>
-                    <th style={{ textAlign: "center", padding: "0.5rem", color: "#64748b", fontWeight: 600 }}>Sedán / SUV 2 filas</th>
-                    <th style={{ textAlign: "center", padding: "0.5rem", color: "#64748b", fontWeight: 600 }}>Pick Up / SUV 3 filas</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {packages.map((p, i) => (
-                    <tr key={i} style={{ borderBottom: "1px solid rgba(37, 99, 235, 0.06)" }}>
-                      <td style={{ padding: "0.6rem 0.5rem", color: "#0f172a", fontWeight: 600, fontFamily: "var(--font-heading)" }}>{p.name}</td>
-                      <td style={{ textAlign: "center", padding: "0.6rem 0.5rem", color: "#475569" }}>{p.prices.sedan}</td>
-                      <td style={{ textAlign: "center", padding: "0.6rem 0.5rem" }}>
-                        <span className="gradient-text" style={{ fontWeight: 700 }}>{p.prices.pickup}</span>
-                      </td>
-                    </tr>
-                  ))}
-                  {/* Graphene Shield upgrade row */}
-                  <tr style={{ borderBottom: "1px solid rgba(37, 99, 235, 0.06)", background: "rgba(37,99,235,0.03)" }}>
-                    <td style={{ padding: "0.6rem 0.5rem", color: "#2563eb", fontWeight: 600, fontFamily: "var(--font-heading)", fontSize: "0.82rem" }}>↳ Upgrade Graphene Shield</td>
-                    <td style={{ textAlign: "center", padding: "0.6rem 0.5rem", color: "#475569" }}>$17,999</td>
-                    <td style={{ textAlign: "center", padding: "0.6rem 0.5rem" }}>
-                      <span className="gradient-text" style={{ fontWeight: 700 }}>$20,699</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <p style={{ color: "#475569", fontSize: "0.75rem", textAlign: "center", marginTop: "0.75rem" }}>
-              Precios en MXN · IVA incluido · Facturación CFDI disponible
-            </p>
-          </div>
-
           <div className="services-grid" style={{ maxWidth: "1100px", margin: "0 auto" }}>
-            {packages.map((p, i) => (
-              <div key={i} className={`glass-card price-card animate-on-scroll ${p.featured ? "featured" : ""}`}>
-                {p.featured && <span className="badge">Más Popular</span>}
-                <h3 style={{ fontSize: "1.3rem", marginBottom: "0.25rem" }}>{p.name}</h3>
-                <p style={{ color: "#94a3b8", fontSize: "0.85rem" }}>{p.subtitle}</p>
-                <div className="price-amount gradient-text">{p.price}</div>
-                <p style={{ color: "#94a3b8", fontSize: "0.8rem", marginBottom: "0.5rem" }}>{p.priceLabel} · IVA incluido</p>
-                <ul className="price-list">
-                  {p.features.map((f, fi) => (
-                    <li key={fi}>{f}</li>
-                  ))}
-                </ul>
-                {p.upgrade && (
-                  <div style={{ background: "rgba(37,99,235,0.05)", padding: "0.75rem", borderRadius: "0.5rem", marginBottom: "1rem", textAlign: "left" }}>
-                    <p style={{ color: "#2563eb", fontSize: "0.8rem", fontWeight: 600, marginBottom: "0.25rem" }}>⬆️ Upgrade: {p.upgrade.name}</p>
-                    <p style={{ color: "#475569", fontSize: "0.78rem", marginBottom: "0.25rem" }}>{p.upgrade.desc}</p>
-                    <p style={{ color: "#0f172a", fontSize: "0.85rem", fontWeight: 700 }}>{p.upgrade.price} MXN</p>
-                  </div>
-                )}
-                <Link href={`/reservar?paquete=${p.name.toLowerCase().replace(/ /g, '-')}`} className={p.featured ? "btn-premium" : "btn-outline"} style={{ width: "100%", justifyContent: "center" }}>
-                  Reservar {p.name}
-                </Link>
-              </div>
-            ))}
+            {packages.map((p, i) => {
+              const isGrapheneActive = p.upgrade && grapheneUpgrade;
+              const displayPrice = isGrapheneActive ? p.upgrade!.price : p.price;
+              const displayName = isGrapheneActive ? "Graphene Shield" : p.name;
+              const displaySubtitle = isGrapheneActive ? "Protección superior de grafeno 5-7 años" : p.subtitle;
+              const bookingSlug = isGrapheneActive ? "graphene-upgrade" : p.name.toLowerCase().replace(/ /g, '-');
+
+              return (
+                <div key={i} className={`glass-card price-card animate-on-scroll ${p.featured ? "featured" : ""}`}>
+                  {p.featured && <span className="badge">Más Popular</span>}
+                  <h3 style={{ fontSize: "1.3rem", marginBottom: "0.25rem" }}>{p.name}</h3>
+                  <p style={{ color: "#94a3b8", fontSize: "0.85rem" }}>{displaySubtitle}</p>
+                  <div className="price-amount gradient-text" style={{ transition: "all 0.3s ease" }}>{displayPrice}</div>
+                  <p style={{ color: "#94a3b8", fontSize: "0.8rem", marginBottom: "0.5rem" }}>{p.priceLabel} · IVA incluido</p>
+                  <ul className="price-list">
+                    {p.features.map((f, fi) => (
+                      <li key={fi}>{f}</li>
+                    ))}
+                  </ul>
+                  {p.upgrade && (
+                    <button
+                      onClick={() => setGrapheneUpgrade(!grapheneUpgrade)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.75rem",
+                        width: "100%",
+                        padding: "0.85rem",
+                        borderRadius: "0.75rem",
+                        border: grapheneUpgrade ? "2px solid #2563eb" : "2px solid rgba(37,99,235,0.15)",
+                        background: grapheneUpgrade ? "linear-gradient(135deg, rgba(37,99,235,0.08), rgba(59,130,246,0.05))" : "rgba(37,99,235,0.03)",
+                        cursor: "pointer",
+                        marginBottom: "1rem",
+                        textAlign: "left",
+                        transition: "all 0.3s ease",
+                      }}
+                    >
+                      {/* Toggle switch */}
+                      <div style={{
+                        width: "44px",
+                        height: "24px",
+                        borderRadius: "12px",
+                        background: grapheneUpgrade ? "linear-gradient(135deg, #2563eb, #3b82f6)" : "#cbd5e1",
+                        position: "relative",
+                        flexShrink: 0,
+                        transition: "background 0.3s ease",
+                        boxShadow: grapheneUpgrade ? "0 0 12px rgba(37,99,235,0.3)" : "none",
+                      }}>
+                        <div style={{
+                          width: "18px",
+                          height: "18px",
+                          borderRadius: "50%",
+                          background: "#ffffff",
+                          position: "absolute",
+                          top: "3px",
+                          left: grapheneUpgrade ? "23px" : "3px",
+                          transition: "left 0.3s ease",
+                          boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                        }} />
+                      </div>
+                      {/* Label */}
+                      <div style={{ flex: 1 }}>
+                        <p style={{ color: grapheneUpgrade ? "#2563eb" : "#475569", fontSize: "0.8rem", fontWeight: 700, marginBottom: "0.15rem", transition: "color 0.3s ease" }}>
+                          ⬆️ Upgrade: {p.upgrade.name}
+                        </p>
+                        <p style={{ color: "#64748b", fontSize: "0.72rem", margin: 0, lineHeight: 1.4 }}>
+                          {p.upgrade.desc}
+                        </p>
+                        <p style={{ color: grapheneUpgrade ? "#2563eb" : "#0f172a", fontSize: "0.82rem", fontWeight: 700, margin: "0.2rem 0 0", transition: "color 0.3s ease" }}>
+                          {p.upgrade.price} MXN
+                        </p>
+                      </div>
+                    </button>
+                  )}
+                  <Link href={`/reservar?paquete=${bookingSlug}`} className={p.featured ? "btn-premium" : "btn-outline"} style={{ width: "100%", justifyContent: "center" }}>
+                    Reservar {displayName}
+                  </Link>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
