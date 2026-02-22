@@ -597,54 +597,62 @@ export default function HomePage() {
           </div>
 
 
-          {/* Foam Maintenance Section */}
+          {/* ─── Subscription Plans ─── */}
           <div style={{ marginTop: "3rem" }}>
             <div className="animate-on-scroll">
-              <span className="section-label">Mantenimiento Recurrente</span>
+              <span className="section-label">Suscripciones</span>
               <h3 className="section-title" style={{ fontSize: "1.8rem" }}>
-                Mantén tu auto <span className="gradient-text">impecable</span>
+                Planes de <span className="gradient-text">pago recurrente</span>
               </h3>
               <p className="section-subtitle">
-                Servicio exclusivo para clientes que ya contrataron un paquete. Mantén los resultados con visitas regulares.
+                Mantén tu auto impecable con pagos mensuales automáticos. Cancela cuando quieras.
               </p>
             </div>
-            <Link href={`/reservar?paquete=${foamMaintenance.bookingId}`} style={{ textDecoration: "none", color: "inherit" }}>
-              <div className="glass-card animate-on-scroll" style={{ padding: "2rem", textAlign: "left", cursor: "pointer", maxWidth: "600px", margin: "0 auto" }}>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "2rem", maxWidth: "900px", margin: "0 auto" }}>
+              {/* Foam Maintenance Card */}
+              <div className="glass-card animate-on-scroll" style={{ padding: "2rem", textAlign: "left", display: "flex", flexDirection: "column" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem" }}>
                   <span style={{ fontSize: "2.5rem" }}>{foamMaintenance.icon}</span>
                   <div>
                     <h3 style={{ fontSize: "1.2rem", marginBottom: "0.25rem" }}>{foamMaintenance.title}</h3>
-                    <span style={{ color: "#16a34a", fontSize: "0.8rem", fontWeight: 600, background: "#dcfce7", padding: "0.2rem 0.6rem", borderRadius: "1rem" }}>
-                      {foamMaintenance.note}
+                    <span style={{ color: "#16a34a", fontSize: "0.75rem", fontWeight: 600, background: "#dcfce7", padding: "0.2rem 0.6rem", borderRadius: "1rem" }}>
+                      Pago mensual · Recurrente
                     </span>
                   </div>
                 </div>
-                <p style={{ color: "#475569", fontSize: "0.9rem", marginBottom: "1rem", lineHeight: "1.7" }}>{foamMaintenance.desc}</p>
-                <span className="gradient-text" style={{ fontFamily: "var(--font-heading)", fontWeight: 700, fontSize: "1.1rem" }}>
-                  {foamMaintenance.price}
-                </span>
-                <p style={{ color: "#94a3b8", fontSize: "0.75rem", marginTop: "0.5rem" }}>IVA incluido · Facturable</p>
+                <p style={{ color: "#475569", fontSize: "0.88rem", marginBottom: "1rem", lineHeight: "1.7", flex: 1 }}>{foamMaintenance.desc}</p>
+                <div style={{ marginBottom: "0.25rem" }}>
+                  <span className="gradient-text" style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "2rem" }}>$1,800</span>
+                  <span style={{ color: "#64748b", fontSize: "0.9rem", marginLeft: "0.25rem" }}>MXN / mes</span>
+                </div>
+                <p style={{ color: "#94a3b8", fontSize: "0.75rem", marginBottom: "1.25rem" }}>IVA incluido · Facturable · {foamMaintenance.note}</p>
+                <a
+                  href="https://buy.stripe.com/4gM00kclRcDc8e92Zg3ZK03"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-premium"
+                  style={{ width: "100%", justifyContent: "center", textAlign: "center" }}
+                >
+                  🔄 Suscribirme
+                </a>
               </div>
-            </Link>
-          </div>
 
-          {/* Membership Section */}
-          <div style={{ marginTop: "3rem" }}>
-            <div className="animate-on-scroll">
-              <span className="section-label">Membresía</span>
-              <h3 className="section-title" style={{ fontSize: "1.8rem" }}>
-                El plan <span className="gradient-text">inteligente</span>
-              </h3>
-            </div>
-            <Link href={`/reservar?paquete=${membership.bookingId}`} style={{ textDecoration: "none", color: "inherit" }}>
-              <div className="glass-card animate-on-scroll" style={{ padding: "2.5rem", textAlign: "center", cursor: "pointer", maxWidth: "500px", margin: "0 auto", border: "2px solid rgba(37,99,235,0.15)" }}>
+              {/* Membresía Card */}
+              <div className="glass-card animate-on-scroll" style={{ padding: "2rem", textAlign: "center", border: "2px solid rgba(37,99,235,0.15)", display: "flex", flexDirection: "column" }}>
+                <span style={{ display: "inline-block", padding: "0.25rem 1rem", background: "linear-gradient(135deg, #2563eb, #3b82f6)", color: "#ffffff", fontFamily: "var(--font-heading)", fontSize: "0.7rem", fontWeight: 700, borderRadius: "2rem", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "1rem", alignSelf: "center" }}>
+                  Mejor Valor
+                </span>
                 <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>{membership.icon}</div>
                 <h3 style={{ fontSize: "1.3rem", marginBottom: "0.5rem" }}>{membership.title}</h3>
                 <div className="gradient-text" style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "2.5rem", marginBottom: "0.25rem" }}>
                   {membership.price}
                 </div>
-                <p style={{ color: "#64748b", fontSize: "0.9rem", marginBottom: "1.5rem" }}>{membership.priceLabel}</p>
-                <ul style={{ listStyle: "none", padding: 0, textAlign: "left", maxWidth: "320px", margin: "0 auto" }}>
+                <p style={{ color: "#64748b", fontSize: "0.9rem", marginBottom: "0.25rem" }}>{membership.priceLabel}</p>
+                <span style={{ color: "#16a34a", fontSize: "0.75rem", fontWeight: 600, background: "#dcfce7", padding: "0.2rem 0.6rem", borderRadius: "1rem", display: "inline-block", marginBottom: "1.25rem" }}>
+                  Pago mensual · Recurrente
+                </span>
+                <ul style={{ listStyle: "none", padding: 0, textAlign: "left", maxWidth: "320px", margin: "0 auto 1.5rem", flex: 1 }}>
                   {membership.features.map((f, i) => (
                     <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", marginBottom: "0.75rem", color: "#334155", fontSize: "0.9rem" }}>
                       <span style={{ color: "#2563eb", fontWeight: 700, flexShrink: 0 }}>✓</span>
@@ -652,8 +660,17 @@ export default function HomePage() {
                     </li>
                   ))}
                 </ul>
+                <a
+                  href="https://buy.stripe.com/cNi28s71x8mW0LH43k3ZK04"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-premium"
+                  style={{ width: "100%", justifyContent: "center", textAlign: "center" }}
+                >
+                  🔄 Suscribirme
+                </a>
               </div>
-            </Link>
+            </div>
           </div>
         </div>
       </section>
