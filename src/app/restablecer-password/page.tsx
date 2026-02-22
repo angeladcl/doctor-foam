@@ -1,27 +1,27 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { supabase } from "@/lib/supabase";
 
 export default function ResetPasswordPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
-    const [sessionReady, setSessionReady] = useState(false);
+    const [tokenValid, setTokenValid] = useState(false);
+
+    const token = searchParams.get("token");
+    const email = searchParams.get("email");
 
     useEffect(() => {
-        // Supabase will automatically handle the recovery token from the URL hash
-        supabase.auth.onAuthStateChange((event) => {
-            if (event === "PASSWORD_RECOVERY") {
-                setSessionReady(true);
-            }
-        });
-    }, []);
+        if (token && email) {
+            setTokenValid(true);
+        }
+    }, [token, email]);
 
     const handleSetPassword = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -37,16 +37,26 @@ export default function ResetPasswordPage() {
         setLoading(true);
         setError("");
 
-        const { error: updateError } = await supabase.auth.updateUser({
-            password,
-        });
+        try {
+            const response = await fetch("/api/auth/verify-reset-token", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token, email, newPassword: password }),
+            });
 
-        if (updateError) {
-            setError("Error al actualizar la contraseña. Intenta de nuevo.");
-            setLoading(false);
-        } else {
+            const data = await response.json();
+
+            if (!response.ok) {
+                setError(data.error || "Error al actualizar la contraseña");
+                setLoading(false);
+                return;
+            }
+
             setSuccess(true);
-            setTimeout(() => router.push("/mi-cuenta"), 2000);
+            setTimeout(() => router.push("/admin/login"), 3000);
+        } catch {
+            setError("Error de conexión. Intenta de nuevo.");
+            setLoading(false);
         }
     };
 
@@ -63,7 +73,7 @@ export default function ResetPasswordPage() {
                         </h1>
                     </Link>
                     <p style={{ color: "#64748b", fontSize: "0.85rem", marginTop: "0.5rem" }}>
-                        {success ? "¡Contraseña actualizada!" : sessionReady ? "Crea tu nueva contraseña" : "Verificando enlace..."}
+                        {success ? "¡Contraseña actualizada!" : tokenValid ? "Crea tu nueva contraseña" : "Enlace inválido"}
                     </p>
                 </div>
 
@@ -71,9 +81,9 @@ export default function ResetPasswordPage() {
                     <div style={{ textAlign: "center" }}>
                         <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>✅</div>
                         <p style={{ color: "#34d399", marginBottom: "1rem" }}>Tu contraseña ha sido actualizada exitosamente.</p>
-                        <p style={{ color: "#94a3b8", fontSize: "0.85rem" }}>Redirigiendo a tu cuenta...</p>
+                        <p style={{ color: "#94a3b8", fontSize: "0.85rem" }}>Redirigiendo al login...</p>
                     </div>
-                ) : sessionReady ? (
+                ) : tokenValid ? (
                     <form onSubmit={handleSetPassword}>
                         <div style={{ display: "grid", gap: "1rem", marginBottom: "1.5rem" }}>
                             <div>
@@ -98,7 +108,11 @@ export default function ResetPasswordPage() {
                     </form>
                 ) : (
                     <div style={{ textAlign: "center", padding: "2rem" }}>
-                        <div style={{ color: "#94a3b8" }}>Verificando tu enlace...</div>
+                        <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>⚠️</div>
+                        <p style={{ color: "#f87171", marginBottom: "1rem" }}>Enlace inválido o expirado.</p>
+                        <Link href="/admin/login" style={{ color: "#60a5fa", textDecoration: "none", fontSize: "0.9rem" }}>
+                            Volver al login →
+                        </Link>
                     </div>
                 )}
             </div>
