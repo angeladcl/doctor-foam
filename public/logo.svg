@@ -1,53 +1,35 @@
 <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#d4a853"/>
-      <stop offset="50%" stop-color="#e5c478"/>
-      <stop offset="100%" stop-color="#d4a853"/>
-    </linearGradient>
-    <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#2563eb"/>
       <stop offset="100%" stop-color="#60a5fa"/>
     </linearGradient>
-    <radialGradient id="bgGrad" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#0f2240"/>
-      <stop offset="100%" stop-color="#0a1628"/>
-    </radialGradient>
   </defs>
 
-  <!-- Background circle -->
-  <circle cx="200" cy="200" r="195" fill="url(#bgGrad)" stroke="url(#goldGradient)" stroke-width="2" opacity="0.9"/>
+  <!-- Minimal flat bubbles cluster -->
+  <circle cx="200" cy="120" r="40" fill="none" stroke="url(#blueGrad)" stroke-width="2.5" opacity="0.9"/>
+  <circle cx="200" cy="120" r="32" fill="url(#blueGrad)" opacity="0.08"/>
 
-  <!-- Main foam bubble -->
-  <circle cx="200" cy="140" r="60" fill="url(#goldGradient)" opacity="0.15"/>
-  <circle cx="200" cy="140" r="55" fill="none" stroke="url(#goldGradient)" stroke-width="2.5" opacity="0.6"/>
-  
-  <!-- Secondary bubbles -->
-  <circle cx="260" cy="105" r="25" fill="url(#goldGradient)" opacity="0.12"/>
-  <circle cx="260" cy="105" r="22" fill="none" stroke="url(#goldGradient)" stroke-width="1.5" opacity="0.5"/>
-  
-  <circle cx="150" cy="115" r="20" fill="url(#goldGradient)" opacity="0.1"/>
-  <circle cx="150" cy="115" r="17" fill="none" stroke="url(#goldGradient)" stroke-width="1.5" opacity="0.4"/>
+  <circle cx="255" cy="95" r="18" fill="none" stroke="url(#blueGrad)" stroke-width="2" opacity="0.7"/>
+  <circle cx="255" cy="95" r="13" fill="url(#blueGrad)" opacity="0.06"/>
 
-  <circle cx="280" cy="145" r="15" fill="url(#goldGradient)" opacity="0.08"/>
-  <circle cx="280" cy="145" r="12" fill="none" stroke="url(#goldGradient)" stroke-width="1" opacity="0.3"/>
+  <circle cx="155" cy="100" r="14" fill="none" stroke="url(#blueGrad)" stroke-width="1.8" opacity="0.6"/>
 
-  <!-- Sparkle on main bubble -->
-  <path d="M180 120 L185 115 L190 120 L185 125Z" fill="#ffffff" opacity="0.8"/>
-  <path d="M210 125 L213 122 L216 125 L213 128Z" fill="#ffffff" opacity="0.5"/>
+  <circle cx="275" cy="130" r="9" fill="url(#blueGrad)" opacity="0.15"/>
+  <circle cx="140" cy="135" r="7" fill="url(#blueGrad)" opacity="0.12"/>
 
-  <!-- DOCTOR text -->
-  <text x="200" y="230" text-anchor="middle" font-family="Outfit, sans-serif" font-weight="800" font-size="48" fill="#ffffff" letter-spacing="0.15em">DOCTOR</text>
+  <!-- DOCTOR text — white fill + blue outline -->
+  <text x="200" y="230" text-anchor="middle" font-family="Outfit, sans-serif" font-weight="800" font-size="48" fill="#ffffff" stroke="url(#blueGrad)" stroke-width="1.5" letter-spacing="0.15em" paint-order="stroke">DOCTOR</text>
 
-  <!-- FOAM text -->
-  <text x="200" y="280" text-anchor="middle" font-family="Outfit, sans-serif" font-weight="800" font-size="56" fill="url(#goldGradient)" letter-spacing="0.2em">FOAM</text>
+  <!-- FOAM text — blue gradient fill -->
+  <text x="200" y="285" text-anchor="middle" font-family="Outfit, sans-serif" font-weight="800" font-size="56" fill="url(#blueGrad)" letter-spacing="0.2em">FOAM</text>
 
   <!-- Tagline -->
-  <text x="200" y="310" text-anchor="middle" font-family="Inter, sans-serif" font-weight="400" font-size="14" fill="#64748b" letter-spacing="0.2em">PREMIUM DETAILING</text>
+  <text x="200" y="318" text-anchor="middle" font-family="Inter, sans-serif" font-weight="400" font-size="14" fill="#64748b" letter-spacing="0.2em">PREMIUM DETAILING</text>
 
   <!-- Decorative line -->
-  <line x1="120" y1="320" x2="280" y2="320" stroke="url(#goldGradient)" stroke-width="1" opacity="0.3"/>
+  <line x1="130" y1="330" x2="270" y2="330" stroke="url(#blueGrad)" stroke-width="1" opacity="0.25"/>
 
   <!-- México tag -->
-  <text x="200" y="345" text-anchor="middle" font-family="Inter, sans-serif" font-weight="500" font-size="12" fill="#94a3b8" letter-spacing="0.3em">MÉXICO</text>
+  <text x="200" y="352" text-anchor="middle" font-family="Inter, sans-serif" font-weight="500" font-size="12" fill="#94a3b8" letter-spacing="0.3em">MÉXICO</text>
 </svg>

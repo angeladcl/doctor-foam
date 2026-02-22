@@ -19,39 +19,27 @@ function Logo({ className = "" }: { className?: string }) {
             <stop offset="0%" stopColor="#2563eb" />
             <stop offset="100%" stopColor="#60a5fa" />
           </linearGradient>
-          <radialGradient id="br" cx="35%" cy="35%" r="65%">
-            <stop offset="0%" stopColor="rgba(96,165,250,0.22)" />
-            <stop offset="100%" stopColor="rgba(37,99,235,0.03)" />
-          </radialGradient>
         </defs>
 
-        {/* Main large bubble */}
-        <circle cx="42" cy="48" r="26" fill="url(#br)" stroke="url(#lg)" strokeWidth="1.5" />
-        <ellipse cx="33" cy="38" rx="7.5" ry="4.5" fill="rgba(255,255,255,0.4)" transform="rotate(-20,33,38)" />
+        {/* Main bubble */}
+        <circle cx="40" cy="45" r="26" fill="url(#lg)" opacity="0.08" />
+        <circle cx="40" cy="45" r="26" fill="none" stroke="url(#lg)" strokeWidth="2" />
 
         {/* Medium bubble — top right */}
-        <circle cx="78" cy="32" r="15" fill="url(#br)" stroke="url(#lg)" strokeWidth="1.2" />
-        <ellipse cx="73" cy="26" rx="4.5" ry="2.8" fill="rgba(255,255,255,0.35)" transform="rotate(-15,73,26)" />
+        <circle cx="76" cy="30" r="14" fill="url(#lg)" opacity="0.06" />
+        <circle cx="76" cy="30" r="14" fill="none" stroke="url(#lg)" strokeWidth="1.5" opacity="0.75" />
 
-        {/* Small bubbles */}
-        <circle cx="22" cy="22" r="8.5" fill="url(#br)" stroke="url(#lg)" strokeWidth="1" opacity="0.8" />
-        <ellipse cx="19" cy="18" rx="2.5" ry="1.5" fill="rgba(255,255,255,0.3)" transform="rotate(-20,19,18)" />
+        {/* Small bubble — bottom right */}
+        <circle cx="78" cy="68" r="9" fill="url(#lg)" opacity="0.12" />
 
-        <circle cx="75" cy="68" r="10" fill="url(#br)" stroke="url(#lg)" strokeWidth="1" opacity="0.7" />
-        <ellipse cx="71" cy="63" rx="3" ry="1.8" fill="rgba(255,255,255,0.3)" transform="rotate(-15,71,63)" />
-
-        <circle cx="90" cy="50" r="5" fill="url(#br)" stroke="url(#lg)" strokeWidth="0.8" opacity="0.6" />
-
-        <circle cx="18" cy="72" r="6" fill="url(#br)" stroke="url(#lg)" strokeWidth="0.8" opacity="0.5" />
-
-        <circle cx="55" cy="12" r="4.5" fill="url(#br)" stroke="url(#lg)" strokeWidth="0.6" opacity="0.45" />
-
-        <circle cx="92" cy="25" r="3.5" fill="url(#br)" stroke="url(#lg)" strokeWidth="0.6" opacity="0.4" />
+        {/* Tiny bubble — top left */}
+        <circle cx="20" cy="18" r="6" fill="url(#lg)" opacity="0.1" />
       </svg>
 
       {/* Wordmark */}
-      <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "1.3rem", color: "#0f172a", lineHeight: 1.1, letterSpacing: "-0.01em" }}>
-        DOCTOR <span className="gradient-text">FOAM</span>
+      <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "1.3rem", lineHeight: 1.1, letterSpacing: "-0.01em" }}>
+        <span style={{ color: "#ffffff", WebkitTextStroke: "0.5px #2563eb", paintOrder: "stroke fill" }}>DOCTOR</span>{" "}
+        <span className="gradient-text">FOAM</span>
       </span>
     </span>
   );

@@ -1,25 +1,25 @@
 <svg viewBox="0 0 400 100" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#d4a853"/>
-      <stop offset="50%" stop-color="#e5c478"/>
-      <stop offset="100%" stop-color="#d4a853"/>
+    <linearGradient id="blueGradH" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#60a5fa"/>
     </linearGradient>
   </defs>
 
-  <!-- Foam bubbles icon -->
-  <circle cx="30" cy="50" r="24" fill="url(#goldGrad)" opacity="0.9"/>
-  <circle cx="30" cy="50" r="18" fill="none" stroke="#0a1628" stroke-width="3"/>
-  <circle cx="48" cy="30" r="10" fill="url(#goldGrad)" opacity="0.7"/>
-  <circle cx="52" cy="65" r="8" fill="url(#goldGrad)" opacity="0.5"/>
-  <path d="M20 42 L24 38 L28 42 L24 46Z" fill="#fff" opacity="0.8"/>
+  <!-- Minimal flat bubbles icon -->
+  <circle cx="30" cy="46" r="20" fill="none" stroke="url(#blueGradH)" stroke-width="2.2" opacity="0.9"/>
+  <circle cx="30" cy="46" r="14" fill="url(#blueGradH)" opacity="0.08"/>
 
-  <!-- DOCTOR text -->
-  <text x="80" y="42" font-family="Outfit, sans-serif" font-weight="800" font-size="28" fill="#ffffff" letter-spacing="0.12em">DOCTOR</text>
+  <circle cx="50" cy="26" r="9" fill="none" stroke="url(#blueGradH)" stroke-width="1.5" opacity="0.65"/>
+  <circle cx="52" cy="68" r="7" fill="url(#blueGradH)" opacity="0.15"/>
+  <circle cx="12" cy="30" r="5" fill="url(#blueGradH)" opacity="0.12"/>
 
-  <!-- FOAM text -->
-  <text x="80" y="78" font-family="Outfit, sans-serif" font-weight="800" font-size="36" fill="url(#goldGrad)" letter-spacing="0.18em">FOAM</text>
+  <!-- DOCTOR text — white fill + blue outline -->
+  <text x="80" y="42" font-family="Outfit, sans-serif" font-weight="800" font-size="28" fill="#ffffff" stroke="url(#blueGradH)" stroke-width="1" letter-spacing="0.12em" paint-order="stroke">DOCTOR</text>
+
+  <!-- FOAM text — blue gradient -->
+  <text x="80" y="78" font-family="Outfit, sans-serif" font-weight="800" font-size="36" fill="url(#blueGradH)" letter-spacing="0.18em">FOAM</text>
 
   <!-- Tagline -->
-  <text x="250" y="65" font-family="Inter, sans-serif" font-weight="400" font-size="10" fill="#64748b" letter-spacing="0.15em">PREMIUM DETAILING</text>
+  <text x="255" y="65" font-family="Inter, sans-serif" font-weight="400" font-size="10" fill="#64748b" letter-spacing="0.15em">PREMIUM DETAILING</text>
 </svg>
