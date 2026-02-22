@@ -5,35 +5,44 @@ import { createServerSupabase } from "@/lib/supabase";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: NextRequest) {
-    try {
-        const { email } = await request.json();
-        if (!email) {
-            return NextResponse.json({ error: "Email requerido" }, { status: 400 });
-        }
+  try {
+    const { email } = await request.json();
+    if (!email) {
+      return NextResponse.json({ error: "Email requerido" }, { status: 400 });
+    }
 
-        const supabase = createServerSupabase();
+    console.log("[reset-password] Processing reset for:", email);
 
-        // Generate a password reset token using Supabase admin
-        const { data, error } = await supabase.auth.admin.generateLink({
-            type: "recovery",
-            email,
-            options: {
-                redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/restablecer-password`,
-            },
-        });
+    const supabase = createServerSupabase();
 
-        if (error || !data?.properties?.action_link) {
-            // Don't reveal if user exists or not
-            return NextResponse.json({ success: true });
-        }
+    // Generate a password reset token using Supabase admin
+    const { data, error } = await supabase.auth.admin.generateLink({
+      type: "recovery",
+      email,
+      options: {
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/restablecer-password`,
+      },
+    });
 
-        const resetLink = data.properties.action_link;
+    if (error) {
+      console.error("[reset-password] Supabase generateLink error:", error.message);
+      // Don't reveal if user exists or not
+      return NextResponse.json({ success: true });
+    }
 
-        await resend.emails.send({
-            from: "Doctor Foam <info@drfoam.com.mx>",
-            to: email,
-            subject: "🔑 Restablecer tu contraseña — Doctor Foam",
-            html: `
+    if (!data?.properties?.action_link) {
+      console.error("[reset-password] No action_link in response:", JSON.stringify(data));
+      return NextResponse.json({ success: true });
+    }
+
+    const resetLink = data.properties.action_link;
+    console.log("[reset-password] Generated reset link successfully, sending email...");
+
+    const { error: emailError } = await resend.emails.send({
+      from: "Doctor Foam <info@drfoam.com.mx>",
+      to: email,
+      subject: "🔑 Restablecer tu contraseña — Doctor Foam",
+      html: `
 <!DOCTYPE html>
 <html lang="es">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
@@ -56,11 +65,17 @@ export async function POST(request: NextRequest) {
   </div>
 </body>
 </html>`,
-        });
+    });
 
-        return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error("Reset password error:", error);
-        return NextResponse.json({ error: "Error interno" }, { status: 500 });
+    if (emailError) {
+      console.error("[reset-password] Resend email error:", JSON.stringify(emailError));
+      return NextResponse.json({ error: "Error al enviar el correo" }, { status: 500 });
     }
+
+    console.log("[reset-password] Email sent successfully to:", email);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("[reset-password] Unexpected error:", error);
+    return NextResponse.json({ error: "Error interno" }, { status: 500 });
+  }
 }
