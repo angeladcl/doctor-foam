@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerSupabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,15 +10,24 @@ export async function POST(request: NextRequest) {
 
     console.log("[reset-password] Processing reset for:", email);
 
-    const supabase = createServerSupabase();
+    // Use anon key client — resetPasswordForEmail is a standard auth method
+    // that works with the anon key (not admin API)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    const redirectUrl = `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/restablecer-password`;
+    console.log("[reset-password] Redirect URL:", redirectUrl);
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/restablecer-password`,
+      redirectTo: redirectUrl,
     });
 
     if (error) {
-      console.error("[reset-password] Supabase resetPasswordForEmail error:", error.message);
-      return NextResponse.json({ error: "Error al enviar el correo" }, { status: 500 });
+      console.error("[reset-password] Error:", error.message, "| Code:", error.status);
+      // Don't reveal if user exists or not
+      return NextResponse.json({ success: true });
     }
 
     console.log("[reset-password] Reset email sent successfully for:", email);
