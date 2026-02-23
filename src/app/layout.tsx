@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import GuestChat from "@/components/GuestChat";
 
 export const metadata: Metadata = {
   title: "Doctor Foam México | Detallado Automotriz Premium a Domicilio",
@@ -77,6 +78,7 @@ export default function RootLayout({
       </head>
       <body>
         {children}
+        <GuestChat />
         <script
           dangerouslySetInnerHTML={{
             __html: `

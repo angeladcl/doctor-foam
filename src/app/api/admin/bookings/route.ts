@@ -143,3 +143,73 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
 }
+
+/* PATCH — Update/reschedule a booking */
+export async function PATCH(request: NextRequest) {
+    const auth = await authenticateAdmin(request);
+    if (!auth) {
+        return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { id, ...updates } = body;
+
+    if (!id) {
+        return NextResponse.json({ error: "Falta ID" }, { status: 400 });
+    }
+
+    // If rescheduling, check new date availability
+    if (updates.service_date) {
+        const { data: existing } = await auth.supabase
+            .from("bookings")
+            .select("id")
+            .eq("service_date", updates.service_date)
+            .neq("id", id)
+            .in("payment_status", ["paid", "manual", "pending", "completed", "rescheduled"]);
+
+        if (existing && existing.length > 0) {
+            return NextResponse.json({ error: "La nueva fecha ya está ocupada" }, { status: 409 });
+        }
+
+        // Check if date is blocked
+        const { data: blocked } = await auth.supabase
+            .from("blocked_dates")
+            .select("id")
+            .eq("blocked_date", updates.service_date);
+
+        if (blocked && blocked.length > 0) {
+            return NextResponse.json({ error: "La nueva fecha está bloqueada" }, { status: 409 });
+        }
+    }
+
+    // Only allow safe fields
+    const allowedFields = [
+        "service_date", "package_name", "customer_name", "customer_phone",
+        "customer_email", "vehicle_info", "vehicle_size", "address",
+        "notes", "payment_status",
+    ];
+
+    const safeUpdates: Record<string, string> = {};
+    for (const key of allowedFields) {
+        if (key in updates) {
+            safeUpdates[key] = updates[key];
+        }
+    }
+
+    if (Object.keys(safeUpdates).length === 0) {
+        return NextResponse.json({ error: "No hay campos para actualizar" }, { status: 400 });
+    }
+
+    const { data, error } = await auth.supabase
+        .from("bookings")
+        .update(safeUpdates)
+        .eq("id", id)
+        .select()
+        .single();
+
+    if (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({ booking: data });
+}

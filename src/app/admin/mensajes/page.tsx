@@ -6,27 +6,33 @@ import AdminLayout from "@/components/AdminLayout";
 
 type Conversation = {
     id: string;
-    customer_id: string;
+    customer_id?: string;
     customer_name: string;
     customer_email: string;
     last_message_at: string;
     unread_count: number;
     status?: string;
+    guest_name?: string;
+    guest_email?: string;
 };
 
 type Message = {
     id: string;
     conversation_id: string;
-    sender_id: string;
-    sender_role: "admin" | "customer";
+    sender_id?: string;
+    sender_role: "admin" | "customer" | "guest";
     content: string;
     created_at: string;
     read: boolean;
 };
 
+type TabType = "clientes" | "invitados";
+
 export default function AdminMensajes() {
     const [session, setSession] = useState<{ access_token: string } | null>(null);
+    const [activeTab, setActiveTab] = useState<TabType>("clientes");
     const [conversations, setConversations] = useState<Conversation[]>([]);
+    const [guestConversations, setGuestConversations] = useState<Conversation[]>([]);
     const [selectedConv, setSelectedConv] = useState<Conversation | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState("");
@@ -43,7 +49,8 @@ export default function AdminMensajes() {
         });
     }, []);
 
-    const fetchConversations = useCallback(async () => {
+    /* ─── Fetch conversations ─── */
+    const fetchClientConversations = useCallback(async () => {
         if (!session) return;
         try {
             const res = await fetch("/api/admin/chat", {
@@ -54,100 +61,148 @@ export default function AdminMensajes() {
                 setConversations(data.conversations || []);
             }
         } catch { /* silent */ }
-        setLoading(false);
     }, [session]);
 
-    useEffect(() => {
-        if (session) {
-            fetchConversations();
-            const interval = setInterval(fetchConversations, 20000);
-            return () => clearInterval(interval);
-        }
-    }, [session, fetchConversations]);
-
-    const loadMessages = useCallback(async (conv: Conversation) => {
+    const fetchGuestConversations = useCallback(async () => {
         if (!session) return;
-        setLoadingMessages(true);
-        setSelectedConv(conv);
-        setMobileView("chat");
         try {
-            const res = await fetch(`/api/chat?conversation_id=${conv.id}`, {
+            const res = await fetch("/api/admin/guest-chat", {
                 headers: { Authorization: `Bearer ${session.access_token}` },
             });
             if (res.ok) {
                 const data = await res.json();
-                setMessages(data.messages || []);
+                setGuestConversations(data.conversations || []);
             }
-            // Mark as read
-            await fetch("/api/chat", {
-                method: "PATCH",
-                headers: {
-                    Authorization: `Bearer ${session.access_token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ conversation_id: conv.id, reader_role: "admin" }),
-            });
+        } catch { /* silent */ }
+    }, [session]);
+
+    const fetchAll = useCallback(async () => {
+        setLoading(true);
+        await Promise.all([fetchClientConversations(), fetchGuestConversations()]);
+        setLoading(false);
+    }, [fetchClientConversations, fetchGuestConversations]);
+
+    useEffect(() => {
+        if (session) {
+            fetchAll();
+            const interval = setInterval(fetchAll, 20000);
+            return () => clearInterval(interval);
+        }
+    }, [session, fetchAll]);
+
+    /* ─── Load messages ─── */
+    const loadMessages = useCallback(async (conv: Conversation, isGuest: boolean) => {
+        if (!session) return;
+        setLoadingMessages(true);
+        setSelectedConv(conv);
+        setMobileView("chat");
+
+        try {
+            if (isGuest) {
+                const res = await fetch(`/api/admin/guest-chat?conversation_id=${conv.id}`, {
+                    headers: { Authorization: `Bearer ${session.access_token}` },
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setMessages(data.messages || []);
+                }
+                // Mark as read
+                await fetch("/api/admin/guest-chat", {
+                    method: "PATCH",
+                    headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ conversation_id: conv.id }),
+                });
+            } else {
+                const res = await fetch(`/api/chat?conversation_id=${conv.id}`, {
+                    headers: { Authorization: `Bearer ${session.access_token}` },
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setMessages(data.messages || []);
+                }
+                await fetch("/api/chat", {
+                    method: "PATCH",
+                    headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ conversation_id: conv.id, reader_role: "admin" }),
+                });
+            }
+
             // Update unread locally
-            setConversations(prev =>
-                prev.map(c => c.id === conv.id ? { ...c, unread_count: 0 } : c)
-            );
+            if (isGuest) {
+                setGuestConversations(prev => prev.map(c => c.id === conv.id ? { ...c, unread_count: 0 } : c));
+            } else {
+                setConversations(prev => prev.map(c => c.id === conv.id ? { ...c, unread_count: 0 } : c));
+            }
         } catch { /* silent */ }
         setLoadingMessages(false);
     }, [session]);
 
-    // Realtime subscription for selected conversation
+    /* ─── Realtime ─── */
     useEffect(() => {
         if (!selectedConv) return;
+        const table = activeTab === "invitados" ? "guest_messages" : "chat_messages";
         const channel = supabase
-            .channel(`chat-${selectedConv.id}`)
+            .channel(`msg-${selectedConv.id}`)
             .on(
                 "postgres_changes",
-                { event: "INSERT", schema: "public", table: "chat_messages", filter: `conversation_id=eq.${selectedConv.id}` },
+                { event: "INSERT", schema: "public", table, filter: `conversation_id=eq.${selectedConv.id}` },
                 (payload) => {
                     const msg = payload.new as Message;
                     setMessages(prev => {
                         if (prev.some(m => m.id === msg.id)) return prev;
                         return [...prev, msg];
                     });
-                    // Auto-mark as read if it's from customer
-                    if (msg.sender_role === "customer" && session) {
-                        fetch("/api/chat", {
+                    // Auto-mark as read
+                    const otherRole = activeTab === "invitados" ? "guest" : "customer";
+                    if (msg.sender_role === otherRole && session) {
+                        const endpoint = activeTab === "invitados" ? "/api/admin/guest-chat" : "/api/chat";
+                        const body = activeTab === "invitados"
+                            ? { conversation_id: selectedConv.id }
+                            : { conversation_id: selectedConv.id, reader_role: "admin" };
+                        fetch(endpoint, {
                             method: "PATCH",
-                            headers: {
-                                Authorization: `Bearer ${session.access_token}`,
-                                "Content-Type": "application/json",
-                            },
-                            body: JSON.stringify({ conversation_id: selectedConv.id, reader_role: "admin" }),
+                            headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+                            body: JSON.stringify(body),
                         }).catch(() => { });
                     }
                 }
             )
             .subscribe();
-
         return () => { supabase.removeChannel(channel); };
-    }, [selectedConv, session]);
+    }, [selectedConv, session, activeTab]);
 
-    // Auto-scroll on new messages
+    // Auto-scroll
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
+    /* ─── Send message ─── */
     const sendMessage = async () => {
         if (!newMessage.trim() || !selectedConv || !session || sending) return;
         setSending(true);
         try {
-            const res = await fetch("/api/chat", {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${session.access_token}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ content: newMessage.trim(), conversation_id: selectedConv.id }),
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setMessages(prev => [...prev, data.message]);
-                setNewMessage("");
+            if (activeTab === "invitados") {
+                const res = await fetch("/api/admin/guest-chat", {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ conversation_id: selectedConv.id, content: newMessage.trim() }),
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setMessages(prev => [...prev, data.message]);
+                    setNewMessage("");
+                }
+            } else {
+                const res = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ content: newMessage.trim(), conversation_id: selectedConv.id }),
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    setMessages(prev => [...prev, data.message]);
+                    setNewMessage("");
+                }
             }
         } catch { /* silent */ }
         setSending(false);
@@ -156,15 +211,25 @@ export default function AdminMensajes() {
     const handleBack = () => {
         setMobileView("list");
         setSelectedConv(null);
-        fetchConversations();
+        fetchAll();
     };
 
-    const filteredConversations = conversations.filter(c =>
+    const switchTab = (tab: TabType) => {
+        setActiveTab(tab);
+        setSelectedConv(null);
+        setMessages([]);
+        setMobileView("list");
+        setSearchQuery("");
+    };
+
+    /* ─── Helpers ─── */
+    const currentConversations = activeTab === "clientes" ? conversations : guestConversations;
+    const filteredConversations = currentConversations.filter(c =>
         !searchQuery || c.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         c.customer_email.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
-    const totalUnread = conversations.reduce((acc, c) => acc + c.unread_count, 0);
+    const totalClientUnread = conversations.reduce((acc, c) => acc + c.unread_count, 0);
+    const totalGuestUnread = guestConversations.reduce((acc, c) => acc + c.unread_count, 0);
 
     const formatTime = (iso: string) => {
         const d = new Date(iso);
@@ -176,10 +241,8 @@ export default function AdminMensajes() {
         return d.toLocaleDateString("es-MX", { day: "numeric", month: "short" });
     };
 
-    const formatMessageTime = (iso: string) => {
-        const d = new Date(iso);
-        return d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
-    };
+    const formatMessageTime = (iso: string) =>
+        new Date(iso).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
 
     const getInitial = (name: string) => (name || "?")[0].toUpperCase();
 
@@ -188,25 +251,59 @@ export default function AdminMensajes() {
             <div style={{ marginBottom: "1.5rem" }}>
                 <h1 style={{ color: "white", fontSize: "1.5rem", fontFamily: "var(--font-heading)", fontWeight: 800, margin: 0 }}>
                     💬 Mensajes
-                    {totalUnread > 0 && (
+                    {(totalClientUnread + totalGuestUnread) > 0 && (
                         <span style={{
                             marginLeft: "0.75rem", background: "#ef4444", color: "white",
                             fontSize: "0.75rem", fontWeight: 700, padding: "0.2rem 0.6rem",
                             borderRadius: "1rem", verticalAlign: "middle",
                         }}>
-                            {totalUnread} sin leer
+                            {totalClientUnread + totalGuestUnread} sin leer
                         </span>
                     )}
                 </h1>
             </div>
 
+            {/* ─── Tabs ─── */}
+            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
+                {([
+                    { key: "clientes" as TabType, label: "👤 Clientes", count: totalClientUnread },
+                    { key: "invitados" as TabType, label: "🌐 Invitados", count: totalGuestUnread },
+                ]).map(tab => (
+                    <button
+                        key={tab.key}
+                        onClick={() => switchTab(tab.key)}
+                        style={{
+                            padding: "0.55rem 1.1rem", borderRadius: "0.6rem",
+                            border: activeTab === tab.key ? "1px solid rgba(59,130,246,0.4)" : "1px solid rgba(96,165,250,0.1)",
+                            background: activeTab === tab.key ? "rgba(59,130,246,0.15)" : "rgba(10,22,40,0.4)",
+                            color: activeTab === tab.key ? "#60a5fa" : "#94a3b8",
+                            cursor: "pointer", fontWeight: 600, fontSize: "0.85rem",
+                            fontFamily: "var(--font-heading)", transition: "all 0.2s",
+                            display: "flex", alignItems: "center", gap: "0.4rem",
+                        }}
+                    >
+                        {tab.label}
+                        {tab.count > 0 && (
+                            <span style={{
+                                background: "#ef4444", color: "white", fontSize: "0.6rem",
+                                fontWeight: 700, padding: "0.1rem 0.35rem", borderRadius: "1rem",
+                                minWidth: "14px", textAlign: "center",
+                            }}>
+                                {tab.count}
+                            </span>
+                        )}
+                    </button>
+                ))}
+            </div>
+
+            {/* ─── Chat Layout ─── */}
             <div className="msg-layout" style={{
-                display: "flex", gap: "0", height: "calc(100vh - 180px)",
+                display: "flex", gap: "0", height: "calc(100vh - 230px)",
                 borderRadius: "1rem", overflow: "hidden",
                 border: "1px solid rgba(96,165,250,0.1)",
                 background: "rgba(10,22,40,0.5)",
             }}>
-                {/* ─── Conversation List ─── */}
+                {/* Conversation List */}
                 <div className="msg-list-panel" style={{
                     width: "340px", flexShrink: 0,
                     borderRight: "1px solid rgba(96,165,250,0.08)",
@@ -218,8 +315,7 @@ export default function AdminMensajes() {
                         <div style={{
                             display: "flex", alignItems: "center", gap: "0.5rem",
                             background: "rgba(255,255,255,0.05)", borderRadius: "0.5rem",
-                            padding: "0.5rem 0.75rem",
-                            border: "1px solid rgba(96,165,250,0.1)",
+                            padding: "0.5rem 0.75rem", border: "1px solid rgba(96,165,250,0.1)",
                         }}>
                             <span style={{ color: "#64748b", fontSize: "0.9rem" }}>🔍</span>
                             <input
@@ -243,19 +339,23 @@ export default function AdminMensajes() {
                             </div>
                         ) : filteredConversations.length === 0 ? (
                             <div style={{ padding: "2rem", textAlign: "center", color: "#64748b" }}>
-                                <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem", opacity: 0.5 }}>💬</div>
+                                <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem", opacity: 0.5 }}>
+                                    {activeTab === "invitados" ? "🌐" : "💬"}
+                                </div>
                                 <p style={{ fontSize: "0.85rem", margin: 0 }}>
-                                    {searchQuery ? "Sin resultados" : "No hay conversaciones aún"}
+                                    {searchQuery ? "Sin resultados" : activeTab === "invitados" ? "No hay chats de invitados aún" : "No hay conversaciones aún"}
                                 </p>
                                 <p style={{ fontSize: "0.75rem", marginTop: "0.5rem", color: "#475569" }}>
-                                    {searchQuery ? "Intenta otro término" : "Las conversaciones aparecerán cuando un cliente te escriba"}
+                                    {searchQuery ? "Intenta otro término" : activeTab === "invitados"
+                                        ? "Aparecerán cuando un visitante use el chat público"
+                                        : "Las conversaciones aparecerán cuando un cliente te escriba"}
                                 </p>
                             </div>
                         ) : (
                             filteredConversations.map(conv => (
                                 <button
                                     key={conv.id}
-                                    onClick={() => loadMessages(conv)}
+                                    onClick={() => loadMessages(conv, activeTab === "invitados")}
                                     style={{
                                         width: "100%", display: "flex", alignItems: "center", gap: "0.75rem",
                                         padding: "0.85rem 0.75rem", borderRadius: "0.75rem", marginBottom: "0.25rem",
@@ -268,7 +368,9 @@ export default function AdminMensajes() {
                                     <div style={{
                                         width: "42px", height: "42px", borderRadius: "50%", flexShrink: 0,
                                         background: conv.unread_count > 0
-                                            ? "linear-gradient(135deg, #3b82f6, #8b5cf6)"
+                                            ? activeTab === "invitados"
+                                                ? "linear-gradient(135deg, #10b981, #34d399)"
+                                                : "linear-gradient(135deg, #3b82f6, #8b5cf6)"
                                             : "rgba(96,165,250,0.15)",
                                         display: "flex", alignItems: "center", justifyContent: "center",
                                         color: conv.unread_count > 0 ? "white" : "#64748b",
@@ -300,8 +402,8 @@ export default function AdminMensajes() {
                                             </span>
                                             {conv.unread_count > 0 && (
                                                 <span style={{
-                                                    background: "#3b82f6", color: "white",
-                                                    fontSize: "0.65rem", fontWeight: 700,
+                                                    background: activeTab === "invitados" ? "#10b981" : "#3b82f6",
+                                                    color: "white", fontSize: "0.65rem", fontWeight: 700,
                                                     padding: "0.1rem 0.4rem", borderRadius: "1rem",
                                                     minWidth: "16px", textAlign: "center",
                                                 }}>
@@ -316,7 +418,7 @@ export default function AdminMensajes() {
                     </div>
                 </div>
 
-                {/* ─── Chat Area ─── */}
+                {/* Chat Area */}
                 <div className="msg-chat-panel" style={{
                     flex: 1, display: "flex", flexDirection: "column",
                     background: "rgba(10,22,40,0.3)",
@@ -338,23 +440,31 @@ export default function AdminMensajes() {
                                         cursor: "pointer", fontSize: "1.1rem", padding: "0.25rem",
                                         display: "none",
                                     }}
-                                >
-                                    ←
-                                </button>
+                                >←</button>
                                 <div style={{
                                     width: "36px", height: "36px", borderRadius: "50%",
-                                    background: "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                                    background: activeTab === "invitados"
+                                        ? "linear-gradient(135deg, #10b981, #34d399)"
+                                        : "linear-gradient(135deg, #3b82f6, #8b5cf6)",
                                     display: "flex", alignItems: "center", justifyContent: "center",
                                     color: "white", fontWeight: 700, fontSize: "0.9rem",
                                 }}>
                                     {getInitial(selectedConv.customer_name)}
                                 </div>
                                 <div>
-                                    <div style={{ color: "white", fontWeight: 600, fontSize: "0.9rem", fontFamily: "var(--font-heading)" }}>
+                                    <div style={{ color: "white", fontWeight: 600, fontSize: "0.9rem", fontFamily: "var(--font-heading)", display: "flex", alignItems: "center", gap: "0.4rem" }}>
                                         {selectedConv.customer_name}
+                                        <span style={{
+                                            fontSize: "0.6rem", padding: "0.1rem 0.35rem", borderRadius: "0.3rem",
+                                            background: activeTab === "invitados" ? "rgba(16,185,129,0.15)" : "rgba(59,130,246,0.15)",
+                                            color: activeTab === "invitados" ? "#34d399" : "#60a5fa",
+                                            fontWeight: 600,
+                                        }}>
+                                            {activeTab === "invitados" ? "Invitado" : "Cliente"}
+                                        </span>
                                     </div>
                                     <div style={{ color: "#64748b", fontSize: "0.7rem" }}>
-                                        {selectedConv.customer_email}
+                                        {selectedConv.customer_email || "Sin email"}
                                     </div>
                                 </div>
                             </div>
@@ -378,23 +488,20 @@ export default function AdminMensajes() {
                                                 marginBottom: "0.75rem",
                                             }}>
                                                 <div style={{
-                                                    maxWidth: "75%",
-                                                    padding: "0.7rem 1rem",
+                                                    maxWidth: "75%", padding: "0.7rem 1rem",
                                                     borderRadius: isAdmin ? "1rem 1rem 0.25rem 1rem" : "1rem 1rem 1rem 0.25rem",
                                                     background: isAdmin
                                                         ? "linear-gradient(135deg, #2563eb, #3b82f6)"
                                                         : "rgba(255,255,255,0.08)",
                                                     color: isAdmin ? "white" : "#e2e8f0",
-                                                    fontSize: "0.88rem",
-                                                    lineHeight: "1.55",
+                                                    fontSize: "0.88rem", lineHeight: "1.55",
                                                     border: isAdmin ? "none" : "1px solid rgba(96,165,250,0.1)",
                                                 }}>
                                                     <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{msg.content}</div>
                                                     <div style={{
                                                         fontSize: "0.65rem",
                                                         color: isAdmin ? "rgba(255,255,255,0.6)" : "#64748b",
-                                                        marginTop: "0.35rem",
-                                                        textAlign: "right",
+                                                        marginTop: "0.35rem", textAlign: "right",
                                                         display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.3rem",
                                                     }}>
                                                         {formatMessageTime(msg.created_at)}
@@ -449,12 +556,14 @@ export default function AdminMensajes() {
                             flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
                             flexDirection: "column", color: "#64748b",
                         }}>
-                            <div style={{ fontSize: "4rem", opacity: 0.25, marginBottom: "1rem" }}>💬</div>
+                            <div style={{ fontSize: "4rem", opacity: 0.25, marginBottom: "1rem" }}>
+                                {activeTab === "invitados" ? "🌐" : "💬"}
+                            </div>
                             <p style={{ fontSize: "1rem", fontWeight: 600, color: "#94a3b8", fontFamily: "var(--font-heading)" }}>
                                 Selecciona una conversación
                             </p>
                             <p style={{ fontSize: "0.8rem", marginTop: "0.5rem" }}>
-                                Elige un chat de la lista para ver los mensajes
+                                Elige un chat de {activeTab === "invitados" ? "invitados" : "clientes"} para ver los mensajes
                             </p>
                         </div>
                     )}
@@ -465,7 +574,7 @@ export default function AdminMensajes() {
             <style>{`
                 @media (max-width: 768px) {
                     .msg-layout {
-                        height: calc(100vh - 140px) !important;
+                        height: calc(100vh - 190px) !important;
                     }
                     .msg-list-panel {
                         width: 100% !important;

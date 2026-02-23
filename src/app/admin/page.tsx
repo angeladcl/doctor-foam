@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -162,6 +162,13 @@ export default function AdminDashboardPage() {
     const [selectedDate, setSelectedDate] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
 
+    /* Service manager states */
+    const [editMode, setEditMode] = useState(false);
+    const [editData, setEditData] = useState<Partial<Booking>>({});
+    const [rescheduleDate, setRescheduleDate] = useState("");
+    const [showReschedule, setShowReschedule] = useState(false);
+    const [saving, setSaving] = useState(false);
+
     /* New booking form */
     const [newBooking, setNewBooking] = useState({
         customer_name: "",
@@ -293,6 +300,113 @@ export default function AdminDashboardPage() {
         } catch { alert("Error al cancelar"); }
     };
 
+    /* Open detail modal */
+    const openDetail = (booking: Booking) => {
+        setShowDetailModal(booking);
+        setEditMode(false);
+        setShowReschedule(false);
+        setEditData({});
+        setRescheduleDate("");
+    };
+
+    /* Start edit mode */
+    const startEdit = () => {
+        if (!showDetailModal) return;
+        setEditData({
+            customer_name: showDetailModal.customer_name,
+            customer_phone: showDetailModal.customer_phone,
+            customer_email: showDetailModal.customer_email,
+            vehicle_info: showDetailModal.vehicle_info,
+            package_name: showDetailModal.package_name,
+            address: showDetailModal.address,
+            notes: showDetailModal.notes,
+        });
+        setEditMode(true);
+    };
+
+    /* Save edits */
+    const handleSaveEdit = async () => {
+        if (!session || !showDetailModal) return;
+        setSaving(true);
+        try {
+            const res = await fetch("/api/admin/bookings", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+                body: JSON.stringify({ id: showDetailModal.id, ...editData }),
+            });
+            const data = await res.json();
+            if (data.error) { alert(data.error); setSaving(false); return; }
+            setShowDetailModal(data.booking);
+            setEditMode(false);
+            fetchData();
+        } catch { alert("Error al guardar"); }
+        setSaving(false);
+    };
+
+    /* Reschedule */
+    const handleReschedule = async () => {
+        if (!session || !showDetailModal || !rescheduleDate) return;
+        setSaving(true);
+        try {
+            const res = await fetch("/api/admin/bookings", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+                body: JSON.stringify({ id: showDetailModal.id, service_date: rescheduleDate }),
+            });
+            const data = await res.json();
+            if (data.error) { alert(data.error); setSaving(false); return; }
+            setShowDetailModal(data.booking);
+            setShowReschedule(false);
+            setRescheduleDate("");
+            fetchData();
+        } catch { alert("Error al reprogramar"); }
+        setSaving(false);
+    };
+
+    /* Change status */
+    const handleStatusChange = async (newStatus: string) => {
+        if (!session || !showDetailModal) return;
+        setSaving(true);
+        try {
+            const res = await fetch("/api/admin/bookings", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+                body: JSON.stringify({ id: showDetailModal.id, payment_status: newStatus }),
+            });
+            const data = await res.json();
+            if (data.error) { alert(data.error); setSaving(false); return; }
+            setShowDetailModal(data.booking);
+            fetchData();
+        } catch { alert("Error al cambiar estado"); }
+        setSaving(false);
+    };
+
+    /* ─── Status helpers ─── */
+    const statusStyle = (s: string): React.CSSProperties => {
+        switch (s) {
+            case "completed": return { background: "rgba(16,185,129,0.15)", color: "#34d399" };
+            case "paid": return { background: "rgba(59,130,246,0.15)", color: "#60a5fa" };
+            case "manual": return { background: "rgba(168,85,247,0.15)", color: "#a78bfa" };
+            case "pending": return { background: "rgba(245,158,11,0.15)", color: "#fbbf24" };
+            case "no-show": return { background: "rgba(239,68,68,0.15)", color: "#f87171" };
+            case "rescheduled": return { background: "rgba(6,182,212,0.15)", color: "#22d3ee" };
+            case "cancelled": return { background: "rgba(100,116,139,0.15)", color: "#94a3b8" };
+            default: return { background: "rgba(245,158,11,0.15)", color: "#fbbf24" };
+        }
+    };
+    const statusLabel = (s: string): string => {
+        switch (s) {
+            case "completed": return "✅ Completado";
+            case "paid": return "💰 Pagado";
+            case "manual": return "🟣 Manual";
+            case "pending": return "⏳ Pendiente";
+            case "no-show": return "❌ No-show";
+            case "rescheduled": return "🔄 Reprogramado";
+            case "cancelled": return "🚫 Cancelado";
+            default: return "⏳ " + s;
+        }
+    };
+
     if (loadingAuth) {
         return <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8" }}>Verificando sesión...</div>;
     }
@@ -371,7 +485,7 @@ export default function AdminDashboardPage() {
                                 {filteredBookings.map((b) => (
                                     <button
                                         key={b.id}
-                                        onClick={() => setShowDetailModal(b)}
+                                        onClick={() => openDetail(b)}
                                         style={{
                                             padding: "1rem", borderRadius: "0.75rem", cursor: "pointer",
                                             border: "1px solid rgba(96, 165, 250, 0.15)", textAlign: "left",
@@ -455,36 +569,183 @@ export default function AdminDashboardPage() {
                     </div>
                 )}
 
-                {/* ─── Booking Detail Modal ─── */}
+                {/* ─── Service Manager Modal ─── */}
                 {showDetailModal && (
                     <div style={overlayStyle}>
-                        <div className="glass-card" style={{ maxWidth: "500px", width: "90%", padding: "2rem" }}>
-                            <h3 style={{ fontFamily: "var(--font-heading)", marginBottom: "1rem" }}>Detalle de reserva</h3>
-                            <div style={{ display: "grid", gap: "0.5rem", marginBottom: "1.5rem" }}>
-                                {[
-                                    { label: "Cliente", value: showDetailModal.customer_name },
-                                    { label: "Servicio", value: showDetailModal.package_name },
-                                    { label: "Fecha", value: new Date(showDetailModal.service_date + "T12:00:00").toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) },
-                                    { label: "Vehículo", value: showDetailModal.vehicle_info || "—" },
-                                    { label: "Tamaño", value: showDetailModal.vehicle_size || "—" },
-                                    { label: "Dirección", value: showDetailModal.address || "—" },
-                                    { label: "Teléfono", value: showDetailModal.customer_phone || "—" },
-                                    { label: "Email", value: showDetailModal.customer_email || "—" },
-                                    { label: "Monto", value: showDetailModal.total_amount > 0 ? `$${(showDetailModal.total_amount / 100).toLocaleString("es-MX")} MXN` : "Manual" },
-                                    { label: "Estado", value: showDetailModal.payment_status === "paid" ? "✅ Pagado" : showDetailModal.payment_status === "manual" ? "🟣 Manual" : "⏳ Pendiente" },
-                                    { label: "Origen", value: showDetailModal.source === "online" ? "En línea" : "Admin" },
-                                    { label: "Notas", value: showDetailModal.notes || "—" },
-                                ].map((item) => (
-                                    <div key={item.label} style={{ display: "flex", justifyContent: "space-between", padding: "0.4rem 0", borderBottom: "1px solid rgba(96,165,250,0.08)" }}>
-                                        <span style={{ color: "#64748b", fontSize: "0.85rem" }}>{item.label}</span>
-                                        <span style={{ color: "white", fontSize: "0.85rem", fontWeight: 500, textAlign: "right", maxWidth: "60%" }}>{item.value}</span>
+                        <div className="glass-card" style={{ maxWidth: "560px", width: "92%", padding: "2rem", maxHeight: "90vh", overflowY: "auto" }}>
+                            {/* Header */}
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+                                <h3 style={{ fontFamily: "var(--font-heading)", margin: 0, fontSize: "1.1rem" }}>🔧 Gestión de Servicio</h3>
+                                <button onClick={() => { setShowDetailModal(null); setEditMode(false); setShowReschedule(false); }} style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: "1.3rem" }}>✕</button>
+                            </div>
+
+                            {/* Status badge */}
+                            <div style={{ marginBottom: "1.25rem" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+                                    <span style={{
+                                        fontSize: "0.75rem", fontWeight: 600, padding: "0.3rem 0.75rem",
+                                        borderRadius: "1rem", fontFamily: "var(--font-heading)",
+                                        ...statusStyle(showDetailModal.payment_status),
+                                    }}>
+                                        {statusLabel(showDetailModal.payment_status)}
+                                    </span>
+                                    <span style={{ color: "#64748b", fontSize: "0.75rem" }}>
+                                        {showDetailModal.source === "online" ? "🌐 En línea" : "👤 Admin"}
+                                    </span>
+                                    {showDetailModal.total_amount > 0 && (
+                                        <span style={{ color: "#94a3b8", fontSize: "0.8rem", fontWeight: 600 }}>
+                                            ${(showDetailModal.total_amount / 100).toLocaleString("es-MX")} MXN
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Edit mode fields */}
+                            {editMode ? (
+                                <div style={{ display: "grid", gap: "0.6rem", marginBottom: "1.25rem" }}>
+                                    {[
+                                        { key: "customer_name", label: "Cliente", placeholder: "Nombre del cliente" },
+                                        { key: "customer_phone", label: "Teléfono", placeholder: "Teléfono" },
+                                        { key: "customer_email", label: "Email", placeholder: "Email" },
+                                        { key: "vehicle_info", label: "Vehículo", placeholder: "Marca, modelo, color" },
+                                        { key: "address", label: "Dirección", placeholder: "Dirección" },
+                                    ].map(field => (
+                                        <div key={field.key} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                            <label style={{ color: "#64748b", fontSize: "0.8rem", width: "80px", flexShrink: 0 }}>{field.label}</label>
+                                            <input
+                                                value={(editData as Record<string, string>)[field.key] || ""}
+                                                onChange={e => setEditData({ ...editData, [field.key]: e.target.value })}
+                                                placeholder={field.placeholder}
+                                                style={modalInputStyle}
+                                            />
+                                        </div>
+                                    ))}
+                                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                        <label style={{ color: "#64748b", fontSize: "0.8rem", width: "80px", flexShrink: 0 }}>Paquete</label>
+                                        <select
+                                            value={editData.package_name || ""}
+                                            onChange={e => setEditData({ ...editData, package_name: e.target.value })}
+                                            style={modalInputStyle}
+                                        >
+                                            <option value="Industrial Deep Interior">Industrial Deep Interior</option>
+                                            <option value="Signature Detail">Signature Detail</option>
+                                            <option value="Ceramic Coating">Ceramic Coating</option>
+                                            <option value="Ceramic + Graphene Shield">Ceramic + Graphene Shield</option>
+                                            <option value="Foam Maintenance">Foam Maintenance</option>
+                                        </select>
                                     </div>
-                                ))}
-                            </div>
-                            <div style={{ display: "flex", gap: "0.75rem" }}>
-                                <button onClick={() => setShowDetailModal(null)} style={{ ...modalBtnStyle, flex: 2, background: "rgba(15, 34, 64, 0.6)", color: "#94a3b8" }}>Cerrar</button>
-                                <button onClick={() => handleCancelBooking(showDetailModal.id)} style={{ ...modalBtnStyle, flex: 1, background: "rgba(239, 68, 68, 0.15)", color: "#f87171", border: "1px solid rgba(239,68,68,0.3)" }}>Cancelar</button>
-                            </div>
+                                    <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
+                                        <label style={{ color: "#64748b", fontSize: "0.8rem", width: "80px", flexShrink: 0, marginTop: "0.5rem" }}>Notas</label>
+                                        <textarea
+                                            value={editData.notes || ""}
+                                            onChange={e => setEditData({ ...editData, notes: e.target.value })}
+                                            placeholder="Notas"
+                                            style={{ ...modalInputStyle, minHeight: "50px", resize: "vertical" as const }}
+                                        />
+                                    </div>
+                                    <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.5rem" }}>
+                                        <button onClick={() => setEditMode(false)} style={{ ...modalBtnStyle, flex: 1, background: "rgba(15,34,64,0.6)", color: "#94a3b8" }}>Cancelar</button>
+                                        <button onClick={handleSaveEdit} disabled={saving} className="btn-premium" style={{ flex: 1, justifyContent: "center", fontSize: "0.85rem", opacity: saving ? 0.6 : 1 }}>
+                                            {saving ? "Guardando..." : "💾 Guardar"}
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : showReschedule ? (
+                                /* Reschedule mode */
+                                <div style={{ marginBottom: "1.25rem" }}>
+                                    <p style={{ color: "#94a3b8", fontSize: "0.85rem", marginBottom: "0.75rem" }}>
+                                        Fecha actual: <strong style={{ color: "white" }}>
+                                            {new Date(showDetailModal.service_date + "T12:00:00").toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" })}
+                                        </strong>
+                                    </p>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                                        <label style={{ color: "#64748b", fontSize: "0.85rem" }}>Nueva fecha:</label>
+                                        <input
+                                            type="date"
+                                            value={rescheduleDate}
+                                            onChange={e => setRescheduleDate(e.target.value)}
+                                            min={new Date().toISOString().split("T")[0]}
+                                            style={{ ...modalInputStyle, maxWidth: "200px" }}
+                                        />
+                                    </div>
+                                    <div style={{ display: "flex", gap: "0.5rem" }}>
+                                        <button onClick={() => setShowReschedule(false)} style={{ ...modalBtnStyle, flex: 1, background: "rgba(15,34,64,0.6)", color: "#94a3b8" }}>Cancelar</button>
+                                        <button onClick={handleReschedule} disabled={!rescheduleDate || saving} style={{
+                                            ...modalBtnStyle, flex: 1,
+                                            background: rescheduleDate ? "rgba(6,182,212,0.15)" : "rgba(96,165,250,0.05)",
+                                            color: rescheduleDate ? "#22d3ee" : "#475569",
+                                            border: `1px solid ${rescheduleDate ? "rgba(6,182,212,0.4)" : "rgba(96,165,250,0.1)"}`,
+                                            opacity: saving ? 0.6 : 1,
+                                        }}>
+                                            {saving ? "Moviendo..." : "📅 Confirmar"}
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                /* Read-only details */
+                                <div style={{ display: "grid", gap: "0.4rem", marginBottom: "1.25rem" }}>
+                                    {[
+                                        { label: "Cliente", value: showDetailModal.customer_name },
+                                        { label: "Servicio", value: showDetailModal.package_name },
+                                        { label: "Fecha", value: new Date(showDetailModal.service_date + "T12:00:00").toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) },
+                                        { label: "Vehículo", value: showDetailModal.vehicle_info || "—" },
+                                        { label: "Tamaño", value: showDetailModal.vehicle_size || "—" },
+                                        { label: "Dirección", value: showDetailModal.address || "—" },
+                                        { label: "Teléfono", value: showDetailModal.customer_phone || "—" },
+                                        { label: "Email", value: showDetailModal.customer_email || "—" },
+                                        { label: "Notas", value: showDetailModal.notes || "—" },
+                                    ].map((item) => (
+                                        <div key={item.label} style={{ display: "flex", justifyContent: "space-between", padding: "0.35rem 0", borderBottom: "1px solid rgba(96,165,250,0.06)" }}>
+                                            <span style={{ color: "#64748b", fontSize: "0.82rem" }}>{item.label}</span>
+                                            <span style={{ color: "white", fontSize: "0.82rem", fontWeight: 500, textAlign: "right", maxWidth: "62%" }}>{item.value}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* ─── Status Change ─── */}
+                            {!editMode && !showReschedule && (
+                                <div style={{ marginBottom: "1.25rem" }}>
+                                    <label style={{ color: "#64748b", fontSize: "0.78rem", marginBottom: "0.4rem", display: "block", fontFamily: "var(--font-heading)" }}>Cambiar estado</label>
+                                    <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+                                        {[
+                                            { value: "completed", label: "✅ Completado", bg: "rgba(16,185,129,0.12)", color: "#34d399", border: "rgba(16,185,129,0.3)" },
+                                            { value: "paid", label: "💰 Pagado", bg: "rgba(59,130,246,0.12)", color: "#60a5fa", border: "rgba(59,130,246,0.3)" },
+                                            { value: "manual", label: "🟣 Manual", bg: "rgba(168,85,247,0.12)", color: "#a78bfa", border: "rgba(168,85,247,0.3)" },
+                                            { value: "pending", label: "⏳ Pendiente", bg: "rgba(245,158,11,0.12)", color: "#fbbf24", border: "rgba(245,158,11,0.3)" },
+                                            { value: "no-show", label: "❌ No-show", bg: "rgba(239,68,68,0.12)", color: "#f87171", border: "rgba(239,68,68,0.3)" },
+                                            { value: "rescheduled", label: "🔄 Reprog.", bg: "rgba(6,182,212,0.12)", color: "#22d3ee", border: "rgba(6,182,212,0.3)" },
+                                        ].map(st => (
+                                            <button
+                                                key={st.value}
+                                                onClick={() => handleStatusChange(st.value)}
+                                                disabled={showDetailModal.payment_status === st.value || saving}
+                                                style={{
+                                                    padding: "0.3rem 0.6rem", borderRadius: "0.5rem", fontSize: "0.72rem",
+                                                    fontWeight: 600, cursor: showDetailModal.payment_status === st.value ? "default" : "pointer",
+                                                    background: showDetailModal.payment_status === st.value ? st.bg : "rgba(15,34,64,0.4)",
+                                                    color: showDetailModal.payment_status === st.value ? st.color : "#64748b",
+                                                    border: `1px solid ${showDetailModal.payment_status === st.value ? st.border : "rgba(96,165,250,0.1)"}`,
+                                                    transition: "all 0.2s",
+                                                    opacity: showDetailModal.payment_status === st.value ? 1 : 0.8,
+                                                }}
+                                            >
+                                                {st.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ─── Action Buttons ─── */}
+                            {!editMode && !showReschedule && (
+                                <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                                    <button onClick={() => { setShowDetailModal(null); setEditMode(false); setShowReschedule(false); }} style={{ ...modalBtnStyle, flex: 2, background: "rgba(15,34,64,0.6)", color: "#94a3b8" }}>Cerrar</button>
+                                    <button onClick={startEdit} style={{ ...modalBtnStyle, flex: 1, background: "rgba(59,130,246,0.12)", color: "#60a5fa", border: "1px solid rgba(59,130,246,0.3)" }}>✏️ Editar</button>
+                                    <button onClick={() => setShowReschedule(true)} style={{ ...modalBtnStyle, flex: 1, background: "rgba(6,182,212,0.12)", color: "#22d3ee", border: "1px solid rgba(6,182,212,0.3)" }}>📅 Reprogramar</button>
+                                    <button onClick={() => handleCancelBooking(showDetailModal.id)} style={{ ...modalBtnStyle, flex: 1, background: "rgba(239,68,68,0.12)", color: "#f87171", border: "1px solid rgba(239,68,68,0.3)" }}>🚫 Cancelar</button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
