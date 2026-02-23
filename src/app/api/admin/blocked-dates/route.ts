@@ -13,6 +13,7 @@ async function authenticateAdmin(request: NextRequest) {
     });
     const { data: { user }, error } = await supabase.auth.getUser(token);
     if (error || !user) return null;
+    if (user.app_metadata?.role !== "admin") return null;
     return { supabase, user };
 }
 

@@ -25,8 +25,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     const [unreadMessages, setUnreadMessages] = useState(0);
 
     useEffect(() => {
-        supabase.auth.getSession().then(({ data }) => {
+        supabase.auth.getSession().then(async ({ data }) => {
             if (data.session) {
+                // Verify admin role
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user?.app_metadata?.role !== "admin") {
+                    router.push("/");
+                    setLoadingAuth(false);
+                    return;
+                }
                 setSession(data.session);
             } else {
                 router.push("/admin/login");

@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
+import InstallPrompt from "@/components/InstallPrompt";
 
 const NAV_ITEMS = [
     { href: "/mi-cuenta", label: "Inicio", icon: "🏠" },
@@ -196,6 +197,8 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             <main style={{ flex: 1, marginLeft: "260px", padding: "2rem", minHeight: "100vh" }} className="portal-main">
                 {children}
             </main>
+
+            <InstallPrompt />
 
             <style>{`
                 @media (max-width: 768px) {

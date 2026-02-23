@@ -19,6 +19,7 @@ export default function ServicesPage() {
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<"all" | "upcoming" | "past">("all");
+    const [cancelling, setCancelling] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchBookings = async () => {
@@ -29,7 +30,6 @@ export default function ServicesPage() {
                 .from("bookings")
                 .select("*")
                 .eq("customer_id", user.id)
-                .neq("payment_status", "cancelled")
                 .order("service_date", { ascending: false });
 
             setBookings(data || []);
@@ -40,10 +40,34 @@ export default function ServicesPage() {
 
     const today = new Date().toISOString().split("T")[0];
     const filtered = bookings.filter((b) => {
-        if (filter === "upcoming") return b.service_date >= today;
+        if (filter === "upcoming") return b.service_date >= today && b.payment_status !== "cancelled";
         if (filter === "past") return b.service_date < today;
         return true;
     });
+
+    const handleCancel = async (bookingId: string) => {
+        if (!confirm("¿Estás seguro de cancelar esta reserva? Esta acción no se puede deshacer.")) return;
+        setCancelling(bookingId);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+            const res = await fetch("/api/bookings/cancel", {
+                method: "POST",
+                headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ booking_id: bookingId }),
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setBookings((prev) => prev.map((b) => b.id === bookingId ? { ...b, payment_status: "cancelled" } : b));
+            } else {
+                alert(data.error || "Error al cancelar");
+            }
+        } catch {
+            alert("Error de conexión");
+        } finally {
+            setCancelling(null);
+        }
+    };
 
     return (
         <div>
@@ -95,7 +119,7 @@ export default function ServicesPage() {
                                         background: isPast ? "rgba(100,116,139,0.15)" : b.payment_status === "paid" ? "rgba(16,185,129,0.15)" : "rgba(251,191,36,0.15)",
                                         color: isPast ? "#94a3b8" : b.payment_status === "paid" ? "#34d399" : "#fbbf24",
                                     }}>
-                                        {isPast ? "✅ Completado" : b.payment_status === "paid" ? "Confirmado" : "Pendiente"}
+                                        {isPast ? "✅ Completado" : b.payment_status === "cancelled" ? "❌ Cancelado" : b.payment_status === "paid" ? "Confirmado" : "Pendiente"}
                                     </div>
                                 </div>
                                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
@@ -112,6 +136,22 @@ export default function ServicesPage() {
                                         {b.source === "online" ? "🌐 En línea" : "📋 Manual"}
                                     </p>
                                 </div>
+                                {/* Cancel button for upcoming, non-cancelled bookings */}
+                                {!isPast && b.payment_status !== "cancelled" && (
+                                    <div style={{ marginTop: "0.75rem", paddingTop: "0.75rem", borderTop: "1px solid rgba(96,165,250,0.1)" }}>
+                                        <button
+                                            onClick={() => handleCancel(b.id)}
+                                            disabled={cancelling === b.id}
+                                            style={{
+                                                padding: "0.4rem 1rem", borderRadius: "8px", border: "1px solid rgba(239,68,68,0.3)",
+                                                background: "rgba(239,68,68,0.1)", color: "#f87171", fontSize: "0.8rem",
+                                                cursor: cancelling === b.id ? "wait" : "pointer", fontWeight: 600,
+                                            }}
+                                        >
+                                            {cancelling === b.id ? "Cancelando..." : "Cancelar reserva"}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         );
                     })}

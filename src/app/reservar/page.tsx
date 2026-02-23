@@ -3,84 +3,18 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { PACKAGES, VEHICLE_SIZES, PREMIUM_ZONES } from "@/lib/packages";
 
-/* ─── Updated packages (aligned with homepage) ─── */
-const packagesData: Record<
-    string,
-    { name: string; priceBase: number; label: string; features: string[] }
-> = {
-    "deep-interior": {
-        name: "Industrial Deep Interior",
-        priceBase: 3499,
-        label: "Lavado a base de inyección y extracción",
-        features: [
-            "Lavado a base de inyección y extracción",
-            "Vapor seco industrial a 180°C",
-            "Aspirado de alta potencia",
-            "Hidratación de pieles Connolly",
-            "Sanitización con ozono",
-        ],
-    },
-    "signature-detail": {
-        name: "Signature Detail",
-        priceBase: 9500,
-        label: "Incluye Industrial Deep Interior completo",
-        features: [
-            "Industrial Deep Interior completo",
-            "Corrección de pintura en 2 etapas",
-            "Sellador cerámico express (6 meses)",
-            "Sanitización con ozono",
-            "Técnicos certificados IDA",
-        ],
-    },
-    "ceramic-coating": {
-        name: "Ceramic Coating",
-        priceBase: 14999,
-        label: "Protección cerámica profesional",
-        features: [
-            "Todo lo del Signature Detail",
-            "Recubrimiento cerámico profesional",
-            "Corrección de pintura en 3 etapas",
-            "Certificado Doctor Foam",
-            "Seguimiento post-servicio 30 días",
-        ],
-    },
-    "graphene-upgrade": {
-        name: "Ceramic + Graphene Shield",
-        priceBase: 17999,
-        label: "Protección de grafeno 5-7 años",
-        features: [
-            "Todo lo del Signature Detail",
-            "Recubrimiento de grafeno (5-7 años)",
-            "PPF en zonas de alto impacto",
-            "Certificado Doctor Foam",
-            "Seguimiento personalizado 30 días",
-        ],
-    },
-    "foam-maintenance": {
-        name: "Foam Maintenance",
-        priceBase: 1800,
-        label: "Mantenimiento post-servicio",
-        features: [
-            "Foam cannon industrial de alta presión",
-            "Descontaminación química completa",
-            "Barra de arcilla profesional",
-            "Sellador UV de larga duración",
-            "Limpieza de vidrios y rines",
-        ],
-    },
-};
+/* ─── Re-export for component use (aligned shapes) ─── */
+const packagesData = Object.fromEntries(
+    Object.entries(PACKAGES)
+        .filter(([, v]) => !v.isSubscription) // membership handled separately
+        .map(([k, v]) => [k, { name: v.name, priceBase: v.priceBase, label: v.label, features: v.features }])
+);
 
-const vehicleSizes = [
-    { value: "sedan-2filas", label: "Sedán / SUV 2 filas", coefficient: 1.0 },
-    { value: "pickup-3filas", label: "Pick Up / SUV 3 filas", coefficient: 1.15 },
-];
+const vehicleSizes = VEHICLE_SIZES;
 
-const premiumZones = [
-    "Bosque Real", "Polanco", "Zona Esmeralda / Atizapán", "Santa Fe / Lomas de Santa Fe",
-    "Lomas de Chapultepec", "Pedregal / San Ángel", "Interlomas / Tecamachalco",
-    "Metepec / Toluca", "Bosques de las Lomas", "Otra zona (consultar cobertura)",
-];
+const premiumZones = PREMIUM_ZONES;
 
 /* ─── Calendar Component ─── */
 function Calendar({
@@ -271,11 +205,11 @@ function BookingForm() {
     const cancelled = searchParams.get("cancelled");
     const [hoveredPkg, setHoveredPkg] = useState<string | null>(null);
 
-    /* Form fields */
-    const [customerName, setCustomerName] = useState("");
-    const [customerEmail, setCustomerEmail] = useState("");
-    const [customerPhone, setCustomerPhone] = useState("");
-    const [address, setAddress] = useState("");
+    /* Form fields — pre-fill from query params if available */
+    const [customerName, setCustomerName] = useState(searchParams.get("nombre") || "");
+    const [customerEmail, setCustomerEmail] = useState(searchParams.get("email") || "");
+    const [customerPhone, setCustomerPhone] = useState(searchParams.get("telefono") || "");
+    const [address, setAddress] = useState(searchParams.get("direccion") || "");
     const [addressColonia, setAddressColonia] = useState("");
     const [vehicleBrand, setVehicleBrand] = useState("");
     const [vehicleModel, setVehicleModel] = useState("");

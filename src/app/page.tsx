@@ -571,9 +571,9 @@ export default function HomePage() {
           {/* Main Packages — Horizontal Cards */}
           <div style={{ marginTop: "2.5rem", display: "flex", flexDirection: "column", gap: "2rem" }}>
             {mainServices.map((s, i) => (
-              <div key={i} className="glass-card animate-on-scroll" style={{ display: "flex", gap: "0", overflow: "hidden", cursor: "pointer", transition: "transform 0.3s ease, box-shadow 0.3s ease" }}>
+              <div key={i} className="glass-card animate-on-scroll service-card-horizontal" style={{ display: "flex", gap: "0", overflow: "hidden", cursor: "pointer", transition: "transform 0.3s ease, box-shadow 0.3s ease" }}>
                 {/* Image Side */}
-                <div style={{
+                <div className="service-card-image" style={{
                   flex: "0 0 340px",
                   minHeight: "280px",
                   background: `linear-gradient(135deg, rgba(37,99,235,0.08), rgba(37,99,235,0.15))`,
@@ -590,12 +590,12 @@ export default function HomePage() {
                 </div>
 
                 {/* Content Side */}
-                <div style={{ flex: 1, padding: "2rem 2.5rem", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                <div className="service-card-content" style={{ flex: 1, padding: "2rem 2.5rem", display: "flex", flexDirection: "column", justifyContent: "center" }}>
                   <span style={{ color: "#2563eb", fontSize: "0.8rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.5rem", fontFamily: "var(--font-heading)" }}>{s.tagline}</span>
                   <h3 style={{ fontSize: "1.5rem", marginBottom: "0.75rem", fontFamily: "var(--font-heading)" }}>
                     <span style={{ marginRight: "0.5rem" }}>{s.icon}</span>{s.title}
                   </h3>
-                  <p style={{ color: "#475569", fontSize: "0.9rem", lineHeight: "1.8", marginBottom: "1.25rem" }}>{s.desc}</p>
+                  <p className="service-card-desc" style={{ color: "#475569", fontSize: "0.9rem", lineHeight: "1.8", marginBottom: "1.25rem" }}>{s.desc}</p>
 
                   {/* Highlights */}
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1.5rem" }}>

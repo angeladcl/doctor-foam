@@ -160,6 +160,7 @@ export default function AdminDashboardPage() {
     const [showBlockModal, setShowBlockModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState<Booking | null>(null);
     const [selectedDate, setSelectedDate] = useState("");
+    const [searchQuery, setSearchQuery] = useState("");
 
     /* New booking form */
     const [newBooking, setNewBooking] = useState({
@@ -302,17 +303,30 @@ export default function AdminDashboardPage() {
     const totalRevenue = bookings.filter((b) => b.payment_status === "paid").reduce((sum, b) => sum + b.total_amount, 0) / 100;
     const nextBooking = bookings.filter((b) => b.service_date >= new Date().toISOString().split("T")[0]).sort((a, b) => a.service_date.localeCompare(b.service_date))[0];
 
+    /* Top package */
+    const packageCounts: Record<string, number> = {};
+    bookings.forEach((b) => { packageCounts[b.package_name] = (packageCounts[b.package_name] || 0) + 1; });
+    const topPackage = Object.entries(packageCounts).sort((a, b) => b[1] - a[1])[0];
+
+    /* Filtered bookings for list */
+    const filteredBookings = searchQuery
+        ? bookings.filter((b) =>
+            b.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            b.package_name.toLowerCase().includes(searchQuery.toLowerCase()))
+        : bookings;
+
     return (
         <AdminLayout>
             <div>
 
                 {/* Stats Row */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
                     {[
                         { label: "Reservas este mes", value: totalBookings, icon: "📅" },
                         { label: "Pagadas", value: paidBookings, icon: "✅" },
                         { label: "Ingresos", value: `$${totalRevenue.toLocaleString("es-MX")}`, icon: "💰" },
                         { label: "Próximo servicio", value: nextBooking ? new Date(nextBooking.service_date + "T12:00:00").toLocaleDateString("es-MX", { day: "numeric", month: "short" }) : "—", icon: "🗓️" },
+                        { label: "Top Paquete", value: topPackage ? topPackage[0].split(" ").slice(0, 2).join(" ") : "—", icon: "🏆" },
                     ].map((stat) => (
                         <div key={stat.label} className="glass-card" style={{ padding: "1.25rem", textAlign: "center" }}>
                             <div style={{ fontSize: "1.5rem", marginBottom: "0.25rem" }}>{stat.icon}</div>
@@ -322,7 +336,7 @@ export default function AdminDashboardPage() {
                     ))}
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
+                <div className="admin-grid-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
                     {/* Calendar */}
                     <div className="glass-card" style={{ padding: "1.5rem" }}>
                         <h2 style={{ fontSize: "1.1rem", marginBottom: "1rem", fontFamily: "var(--font-heading)" }}>Calendario</h2>
@@ -335,12 +349,26 @@ export default function AdminDashboardPage() {
 
                     {/* Bookings List */}
                     <div className="glass-card" style={{ padding: "1.5rem", maxHeight: "600px", overflowY: "auto" }}>
-                        <h2 style={{ fontSize: "1.1rem", marginBottom: "1rem", fontFamily: "var(--font-heading)" }}>Reservas del mes</h2>
-                        {bookings.length === 0 ? (
-                            <div style={{ textAlign: "center", padding: "2rem", color: "#64748b" }}>No hay reservas este mes</div>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem", gap: "0.75rem" }}>
+                            <h2 style={{ fontSize: "1.1rem", margin: 0, fontFamily: "var(--font-heading)", whiteSpace: "nowrap" }}>Reservas del mes</h2>
+                            <input
+                                type="text"
+                                placeholder="🔍 Buscar cliente o paquete..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                style={{
+                                    width: "100%", maxWidth: "220px", padding: "0.45rem 0.75rem",
+                                    borderRadius: "0.5rem", border: "1px solid rgba(96, 165, 250, 0.2)",
+                                    background: "rgba(10, 22, 40, 0.6)", color: "white", fontSize: "0.8rem",
+                                    outline: "none",
+                                }}
+                            />
+                        </div>
+                        {filteredBookings.length === 0 ? (
+                            <div style={{ textAlign: "center", padding: "2rem", color: "#64748b" }}>{searchQuery ? "Sin resultados" : "No hay reservas este mes"}</div>
                         ) : (
                             <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                                {bookings.map((b) => (
+                                {filteredBookings.map((b) => (
                                     <button
                                         key={b.id}
                                         onClick={() => setShowDetailModal(b)}

@@ -69,8 +69,11 @@ export async function POST(request: NextRequest) {
     const auth = await getAuthUser(request);
     if (!auth) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-    const { content, conversation_id, sender_role } = await request.json();
+    const { content, conversation_id } = await request.json();
     if (!content?.trim()) return NextResponse.json({ error: "Mensaje vacío" }, { status: 400 });
+
+    // Determine sender_role from JWT, never trust the request body
+    const sender_role = auth.user.app_metadata?.role === "admin" ? "admin" : "customer";
 
     let convId = conversation_id;
 

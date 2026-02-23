@@ -1,35 +1,48 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
-export default function PortalBookingPage() {
+export default function ReservarMiCuenta() {
     const router = useRouter();
+    const [loading, setLoading] = useState(true);
 
-    // Redirect to the main booking page which already has the full flow
-    // Later we can enhance this with pre-filled data from profile
+    useEffect(() => {
+        (async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                router.push("/reservar");
+                return;
+            }
+
+            // Fetch customer profile to pre-fill booking form
+            const { data: profile } = await supabase
+                .from("customer_profiles")
+                .select("full_name, phone, address, vehicle_type")
+                .eq("user_id", user.id)
+                .single();
+
+            const params = new URLSearchParams();
+            if (profile?.full_name) params.set("nombre", profile.full_name);
+            if (user.email) params.set("email", user.email);
+            if (profile?.phone) params.set("telefono", profile.phone);
+            if (profile?.address) params.set("direccion", profile.address);
+            if (profile?.vehicle_type) params.set("vehiculo", profile.vehicle_type);
+
+            const qs = params.toString();
+            router.push(`/reservar${qs ? `?${qs}` : ""}`);
+        })();
+    }, [router]);
+
     return (
-        <div>
-            <h1 style={{ color: "white", fontFamily: "var(--font-heading)", fontSize: "1.5rem", marginBottom: "0.5rem" }}>
-                📅 Reservar servicio
-            </h1>
-            <p style={{ color: "#94a3b8", marginBottom: "2rem" }}>Agenda tu próximo detallado automotriz</p>
-
-            <div className="glass-card" style={{ padding: "2rem", textAlign: "center" }}>
-                <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🚗✨</div>
-                <p style={{ color: "white", fontWeight: 600, fontSize: "1.1rem", marginBottom: "0.5rem" }}>
-                    ¿Listo para tu próximo servicio?
-                </p>
-                <p style={{ color: "#94a3b8", marginBottom: "1.5rem", maxWidth: "400px", margin: "0 auto 1.5rem" }}>
-                    Selecciona tu paquete, elige la fecha y completa tu reserva de forma segura.
-                </p>
-                <button
-                    onClick={() => router.push("/reservar")}
-                    className="btn-premium"
-                    style={{ fontSize: "0.95rem" }}
-                >
-                    📅 Ir a reservar
-                </button>
-            </div>
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "40vh" }}>
+            {loading && (
+                <div style={{ textAlign: "center", color: "#94a3b8" }}>
+                    <div className="spinner" style={{ margin: "0 auto 1rem" }} />
+                    <p>Cargando tu perfil para reservar...</p>
+                </div>
+            )}
         </div>
     );
 }

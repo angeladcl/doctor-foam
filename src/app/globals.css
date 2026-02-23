@@ -729,13 +729,29 @@ h6 {
   }
 
   /* Stack horizontal service cards vertically on mobile */
-  .glass-card[style*="display: flex"] {
+  .service-card-horizontal {
     flex-direction: column !important;
   }
 
-  .glass-card[style*="display: flex"]>div:first-child {
+  .service-card-horizontal>.service-card-image {
     flex: none !important;
-    min-height: 200px !important;
+    min-height: 180px !important;
+    max-height: 200px !important;
+    width: 100% !important;
+  }
+
+  .service-card-horizontal>.service-card-content {
+    padding: 1.25rem 1rem !important;
+  }
+
+  .service-card-horizontal .service-card-desc {
+    font-size: 0.82rem !important;
+    line-height: 1.65 !important;
+  }
+
+  /* Admin dashboard responsive */
+  .admin-grid-2col {
+    grid-template-columns: 1fr !important;
   }
 
   .stats-row {
