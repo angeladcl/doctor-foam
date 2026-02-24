@@ -1,5 +1,6 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type GuestMessage = {
@@ -20,7 +21,13 @@ function getSessionId(): string {
     return id;
 }
 
+// Paths where guest chat should NOT appear
+const HIDDEN_PATHS = ["/admin", "/mi-cuenta/chat"];
+
 export default function GuestChat() {
+    const pathname = usePathname();
+    const shouldHide = HIDDEN_PATHS.some((p) => pathname.startsWith(p));
+
     const [open, setOpen] = useState(false);
     const [messages, setMessages] = useState<GuestMessage[]>([]);
     const [input, setInput] = useState("");
@@ -122,10 +129,7 @@ export default function GuestChat() {
         return d.toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" });
     };
 
-    // Don't render on admin pages
-    if (typeof window !== "undefined" && window.location.pathname.startsWith("/admin")) return null;
-    // Don't render if user is on mi-cuenta (they have their own chat)
-    if (typeof window !== "undefined" && window.location.pathname.startsWith("/mi-cuenta")) return null;
+    if (shouldHide) return null;
 
     return (
         <>

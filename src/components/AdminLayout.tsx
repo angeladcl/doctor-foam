@@ -46,16 +46,28 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         });
     }, [router]);
 
+    // ─── Combined Unread Count (customer + guest) ───
     const fetchUnread = useCallback(async () => {
         if (!session) return;
         try {
-            const res = await fetch("/api/admin/chat?unread=true", {
-                headers: { Authorization: `Bearer ${session.access_token}` },
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setUnreadMessages(data.unread_count || 0);
+            const [customerRes, guestRes] = await Promise.all([
+                fetch("/api/admin/chat?unread=true", {
+                    headers: { Authorization: `Bearer ${session.access_token}` },
+                }),
+                fetch("/api/admin/guest-chat?unread=true", {
+                    headers: { Authorization: `Bearer ${session.access_token}` },
+                }),
+            ]);
+            let total = 0;
+            if (customerRes.ok) {
+                const d = await customerRes.json();
+                total += d.unread_count || 0;
             }
+            if (guestRes.ok) {
+                const d = await guestRes.json();
+                total += d.unread_count || 0;
+            }
+            setUnreadMessages(total);
         } catch { /* silent */ }
     }, [session]);
 
@@ -66,6 +78,48 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             return () => clearInterval(interval);
         }
     }, [session, fetchUnread]);
+
+    // ─── Supabase Realtime: instant unread update on new messages ───
+    useEffect(() => {
+        if (!session) return;
+
+        const channel = supabase
+            .channel("admin-notifications")
+            .on(
+                "postgres_changes",
+                { event: "INSERT", schema: "public", table: "chat_messages" },
+                (payload) => {
+                    if (payload.new?.sender_role === "customer") {
+                        setUnreadMessages((prev) => prev + 1);
+                        // Play notification sound
+                        try {
+                            const audio = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJaOkYGJfH1+gIyNiYKFf31+gI6NiYOFfn1/gI2OiYKFf31+gI+NiIOEf31+gJCNhoOEgH5/f5COh4OEf35+gJGNhoOEgH5/f5KOh4OEf35+gJKNhoKDgH5/f5OOiIODf35+gJSNhoKDgH5/f5SOh4KDgH5+f5WOhoKDgH5/f5aOhoKCgH5/f5iOhoKCgH5+f5iOh4KCgH5+f5mOh4KCgH5+f5qOh4KCf35+f5uOhoKCgH5+f5yOhoKBf35+f52OhoKBgH5+f5+Oh4KBf35+gKCOh4GBf35+f6GOh4GBf35+gKKOhoGBf35+f6OOhoGBgH5+f6SOhoGBgH5+f6SOh4GBf35+gKSOh4GBf35+gKWOhoGAgH5+f6WOhoGBgH5+f6WOhoGBgH5+f6aOhoGBgH5+f6aOhoGBgH5+f6eOhoGBgH5+f6eOhoGBgH5+f6eOh4GBf35+gKeOh4CAgH5+f6eOh4CAgH5+f6eOh4CAgH5+f6eOh4CAgH5+f6eOh4CAgH5+f6eOh4CAgH59f6eOh4CAgH59f6eOh4CAgH59f6eOh4CAgH59f6eOh4CAgH5+f6eOh4CAgH5+f6eOh4CAgH59f6eOh4CAgH5+f6eOhoCAgH5+f6eOhoCAgH5+f6eOhoCAgH5+f6eOhoCAgH5+f6aOhoCAgH5+f6aOhoGAf35+f6aOhoGAf35+f6aOhoGAf35+f6aOhoGAf35+f6aOhoGAf35+f6WOhoGAf35+f6WOhoGBf35+f6WOhoGBf35+f6WOh4GBf35+f6WOh4GBf35+f6WOh4GBf35+f6WOh4GAf35+f6WOh4GAf35+f6WOh4GBf35+f6WOh4GBf35+f6SOh4GBf35+f6SOh4GBf35+f6SOh4GBf35+f6SOh4GBf35+gKSOh4GBf35+gA==");
+                            audio.volume = 0.3;
+                            audio.play().catch(() => { });
+                        } catch { /* silent */ }
+                    }
+                }
+            )
+            .on(
+                "postgres_changes",
+                { event: "INSERT", schema: "public", table: "guest_messages" },
+                (payload) => {
+                    if (payload.new?.sender_role === "guest") {
+                        setUnreadMessages((prev) => prev + 1);
+                        try {
+                            const audio = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJaOkYGJfH1+gIyNiYKFf31+gI6NiYOFfn1/gI2OiYKFf31+gI+NiIOEf31+gJCNhoOEgH5/f5COh4OEf35+gJGNhoOEgH5/f5KOh4OEf35+gJKNhoKDgH5/f5OOiIODf35+gJSNhoKDgH5/f5SOh4KDgH5+f5WOhoKDgH5/f5aOhoKCgH5/f5iOhoKCgH5+f5iOh4KCgH5+f5mOh4KCgH5+f5qOh4KCf35+f5uOhoKCgH5+f5yOhoKBf35+f52OhoKBgH5+f5+Oh4KBf35+gKCOh4GBf35+f6GOh4GBf35+gKKOhoGBf35+f6OOhoGBgH5+f6SOhoGBgH5+f6SOh4GBf35+gKSOh4GBf35+gKWOhoGAgH5+f6WOhoGBgH5+f6WOhoGBgH5+f6aOhoGBgH5+f6aOhoGBgH5+f6eOhoGBgH5+f6eOhoGBgH5+f6eOh4GBf35+gKeOh4CAgH5+f6eOh4CAgH5+f6eOh4CAgH5+f6eOh4CAgH5+f6eOh4CAgH5+f6eOh4CAgH59f6eOh4CAgH59f6eOh4CAgH59f6eOh4CAgH59f6eOh4CAgH5+f6eOh4CAgH5+f6eOh4CAgH59f6eOh4CAgH5+f6eOhoCAgH5+f6eOhoCAgH5+f6eOhoCAgH5+f6eOhoCAgH5+f6aOhoCAgH5+f6aOhoGAf35+f6aOhoGAf35+f6aOhoGAf35+f6aOhoGAf35+f6aOhoGAf35+f6WOhoGAf35+f6WOhoGBf35+f6WOhoGBf35+f6WOh4GBf35+f6WOh4GBf35+f6WOh4GBf35+f6WOh4GAf35+f6WOh4GAf35+f6WOh4GBf35+f6WOh4GBf35+f6SOh4GBf35+f6SOh4GBf35+f6SOh4GBf35+f6SOh4GBf35+gKSOh4GBf35+gA==");
+                            audio.volume = 0.3;
+                            audio.play().catch(() => { });
+                        } catch { /* silent */ }
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [session]);
 
     // ─── Push Notification Auto-Subscribe ───
     const subscribeToPush = useCallback(async () => {
