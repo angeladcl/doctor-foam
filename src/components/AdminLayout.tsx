@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback, ReactNode } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
+
+const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
 
 type AdminLayoutProps = {
     children: ReactNode;
@@ -23,6 +25,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     const [loadingAuth, setLoadingAuth] = useState(true);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [unreadMessages, setUnreadMessages] = useState(0);
+    const [pushStatus, setPushStatus] = useState<"idle" | "granted" | "denied" | "unsupported">("idle");
+    const pushSubscribed = useRef(false);
 
     useEffect(() => {
         supabase.auth.getSession().then(async ({ data }) => {
@@ -62,6 +66,82 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             return () => clearInterval(interval);
         }
     }, [session, fetchUnread]);
+
+    // ─── Push Notification Auto-Subscribe ───
+    const subscribeToPush = useCallback(async () => {
+        if (pushSubscribed.current || !session || !VAPID_PUBLIC_KEY) return;
+        if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+            setPushStatus("unsupported");
+            return;
+        }
+
+        const permission = Notification.permission;
+        if (permission === "denied") {
+            setPushStatus("denied");
+            return;
+        }
+
+        if (permission === "default") {
+            const result = await Notification.requestPermission();
+            if (result !== "granted") {
+                setPushStatus(result === "denied" ? "denied" : "idle");
+                return;
+            }
+        }
+
+        try {
+            const reg = await navigator.serviceWorker.ready;
+
+            // Check for existing subscription
+            let subscription = await reg.pushManager.getSubscription();
+
+            if (!subscription) {
+                // Convert VAPID key from base64url to Uint8Array
+                const padding = "=".repeat((4 - VAPID_PUBLIC_KEY.length % 4) % 4);
+                const base64 = (VAPID_PUBLIC_KEY + padding).replace(/-/g, "+").replace(/_/g, "/");
+                const rawData = atob(base64);
+                const applicationServerKey = new Uint8Array(rawData.length);
+                for (let i = 0; i < rawData.length; i++) {
+                    applicationServerKey[i] = rawData.charCodeAt(i);
+                }
+
+                subscription = await reg.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey,
+                });
+            }
+
+            // Send subscription to server
+            const subJson = subscription.toJSON();
+            await fetch("/api/push/subscribe", {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${session.access_token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    subscription: {
+                        endpoint: subJson.endpoint,
+                        keys: subJson.keys,
+                    },
+                }),
+            });
+
+            pushSubscribed.current = true;
+            setPushStatus("granted");
+        } catch (err) {
+            console.error("Push subscription error:", err);
+            setPushStatus("idle");
+        }
+    }, [session]);
+
+    useEffect(() => {
+        if (session) {
+            // Small delay to not block initial render
+            const timer = setTimeout(subscribeToPush, 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [session, subscribeToPush]);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -214,7 +294,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     }}>
                         Admin Panel
                     </span>
-                    <div style={{ width: "28px" }} />
+                    <button
+                        onClick={subscribeToPush}
+                        title={pushStatus === "granted" ? "Notificaciones activas" : pushStatus === "denied" ? "Notificaciones bloqueadas" : "Activar notificaciones"}
+                        style={{
+                            background: "none", border: "none", cursor: "pointer",
+                            fontSize: "1.2rem", padding: "0.25rem",
+                            opacity: pushStatus === "denied" ? 0.4 : 1,
+                        }}
+                    >
+                        {pushStatus === "granted" ? "🔔" : pushStatus === "denied" ? "🔕" : "🔔"}
+                    </button>
                 </div>
 
                 {/* Page content */}

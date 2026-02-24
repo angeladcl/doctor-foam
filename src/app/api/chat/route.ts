@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { NextRequest, NextResponse } from "next/server";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -135,6 +135,21 @@ export async function POST(request: NextRequest) {
         // Note: admin→customer notification handled in admin chat
     } catch (emailErr) {
         console.error("Chat email notification error:", emailErr);
+    }
+
+    // Push notification to admins (async, don't block)
+    if (sender_role === "customer") {
+        try {
+            const { sendPushToAdmins } = await import("@/lib/push-notify");
+            const senderName = auth.user.user_metadata?.full_name || auth.user.email || "Cliente";
+            await sendPushToAdmins({
+                title: `💬 Mensaje de ${senderName}`,
+                body: content.trim().slice(0, 120),
+                url: "/admin/mensajes",
+            });
+        } catch (pushErr) {
+            console.error("Push notification error:", pushErr);
+        }
     }
 
     return NextResponse.json({ message });

@@ -1,4 +1,4 @@
-const CACHE_NAME = "doctor-foam-v1";
+const CACHE_NAME = "doctor-foam-v2";
 const STATIC_ASSETS = [
     "/",
     "/login",
@@ -52,5 +52,65 @@ self.addEventListener("fetch", (event) => {
                         )
                 )
             )
+    );
+});
+
+// ─── Push Notifications ───
+self.addEventListener("push", (event) => {
+    if (!event.data) return;
+
+    let data;
+    try {
+        data = event.data.json();
+    } catch {
+        data = {
+            title: "Doctor Foam",
+            body: event.data.text(),
+            url: "/admin/mensajes",
+            icon: "/icon-192.png",
+        };
+    }
+
+    const options = {
+        body: data.body || "Nuevo mensaje recibido",
+        icon: data.icon || "/icon-192.png",
+        badge: data.badge || "/icon-192.png",
+        vibrate: [200, 100, 200],
+        tag: "drfoam-chat-" + Date.now(),
+        renotify: true,
+        data: {
+            url: data.url || "/admin/mensajes",
+        },
+        actions: [
+            { action: "open", title: "Ver mensaje" },
+            { action: "close", title: "Cerrar" },
+        ],
+    };
+
+    event.waitUntil(
+        self.registration.showNotification(data.title || "Doctor Foam", options)
+    );
+});
+
+// ─── Notification Click Handler ───
+self.addEventListener("notificationclick", (event) => {
+    event.notification.close();
+
+    if (event.action === "close") return;
+
+    const targetUrl = event.notification.data?.url || "/admin/mensajes";
+
+    event.waitUntil(
+        self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+            // Focus existing window if already open
+            for (const client of clients) {
+                if (client.url.includes("/admin") && "focus" in client) {
+                    client.navigate(targetUrl);
+                    return client.focus();
+                }
+            }
+            // Otherwise open a new window
+            return self.clients.openWindow(targetUrl);
+        })
     );
 });
