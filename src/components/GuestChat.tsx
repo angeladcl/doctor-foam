@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type GuestMessage = {
     id: string;
@@ -54,6 +54,19 @@ export default function GuestChat() {
             }
         } catch { /* silent */ }
     }, [sessionId, open]);
+
+    // Auto-open from URL param (?chat=open) — for Google Maps messaging link
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("chat") === "open") {
+            setOpen(true);
+            // Clean the URL param without reload
+            const url = new URL(window.location.href);
+            url.searchParams.delete("chat");
+            window.history.replaceState({}, "", url.pathname + url.search);
+        }
+    }, []);
 
     // Initial fetch + polling
     useEffect(() => {
@@ -211,6 +224,9 @@ export default function GuestChat() {
                                 </h3>
                                 <p style={{ color: "#94a3b8", fontSize: "0.8rem", margin: 0 }}>
                                     Escríbenos tu pregunta y te responderemos lo antes posible
+                                </p>
+                                <p style={{ color: "#60a5fa", fontSize: "0.72rem", margin: "0.5rem 0 0", lineHeight: 1.5 }}>
+                                    💡 Pregunta por disponibilidad, precios, o agenda tu servicio aquí
                                 </p>
                             </div>
                             <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
