@@ -197,8 +197,8 @@ export default function ReservasPage() {
                     </div>
                     <button onClick={() => exportBookingsCSV(filtered)} style={{
                         padding: "0.5rem 1rem", borderRadius: "0.5rem",
-                        background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.3)",
-                        color: "#34d399", cursor: "pointer", fontSize: "0.8rem",
+                        background: "rgba(72,187,120,0.12)", border: "1px solid rgba(72,187,120,0.3)",
+                        color: "#48bb78", cursor: "pointer", fontSize: "0.8rem",
                         fontWeight: 600, fontFamily: "var(--font-heading)",
                     }}>
                         📥 Exportar CSV ({filtered.length})
@@ -209,13 +209,13 @@ export default function ReservasPage() {
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "0.75rem", marginBottom: "1.5rem" }}>
                     {[
                         { label: "Total", value: stats.total, color: "#e2e8f0" },
-                        { label: "Confirmados", value: stats.confirmed, color: "#34d399" },
-                        { label: "Pendientes", value: stats.pending, color: "#fbbf24" },
-                        { label: "Cancelados", value: stats.cancelled, color: "#f87171" },
+                        { label: "Confirmados", value: stats.confirmed, color: "#48bb78" },
+                        { label: "Pendientes", value: stats.pending, color: "#ecc94b" },
+                        { label: "Cancelados", value: stats.cancelled, color: "#fc8181" },
                     ].map(s => (
                         <div key={s.label} style={{
                             padding: "0.75rem 1rem", borderRadius: "0.75rem",
-                            background: "rgba(15,34,64,0.4)", border: "1px solid rgba(96,165,250,0.08)",
+                            background: "rgba(17,26,46,0.5)", border: "1px solid rgba(148,163,184,0.08)",
                             textAlign: "center",
                         }}>
                             <div style={{ fontSize: "1.4rem", fontWeight: 800, color: s.color, fontFamily: "var(--font-heading)" }}>{s.value}</div>

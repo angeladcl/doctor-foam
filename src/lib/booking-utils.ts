@@ -6,14 +6,14 @@ export const CONFIRMED_STATUSES = ["paid", "manual", "completed"];
 
 export const statusStyle = (s: string): React.CSSProperties => {
     switch (s) {
-        case "completed": return { background: "rgba(16,185,129,0.15)", color: "#34d399", border: "1px solid rgba(16,185,129,0.25)" };
-        case "paid": return { background: "rgba(59,130,246,0.15)", color: "#60a5fa", border: "1px solid rgba(59,130,246,0.25)" };
-        case "manual": return { background: "rgba(168,85,247,0.15)", color: "#a78bfa", border: "1px solid rgba(168,85,247,0.25)" };
-        case "pending": return { background: "rgba(245,158,11,0.15)", color: "#fbbf24", border: "1px solid rgba(245,158,11,0.25)" };
-        case "no-show": return { background: "rgba(239,68,68,0.15)", color: "#f87171", border: "1px solid rgba(239,68,68,0.25)" };
-        case "rescheduled": return { background: "rgba(6,182,212,0.15)", color: "#22d3ee", border: "1px solid rgba(6,182,212,0.25)" };
-        case "cancelled": return { background: "rgba(100,116,139,0.15)", color: "#94a3b8", border: "1px solid rgba(100,116,139,0.25)" };
-        default: return { background: "rgba(245,158,11,0.15)", color: "#fbbf24", border: "1px solid rgba(245,158,11,0.25)" };
+        case "completed": return { background: "rgba(72,187,120,0.15)", color: "#48bb78", border: "1px solid rgba(72,187,120,0.25)" };
+        case "paid": return { background: "rgba(99,179,237,0.15)", color: "#63b3ed", border: "1px solid rgba(99,179,237,0.25)" };
+        case "manual": return { background: "rgba(183,148,246,0.15)", color: "#b794f6", border: "1px solid rgba(183,148,246,0.25)" };
+        case "pending": return { background: "rgba(236,201,75,0.15)", color: "#ecc94b", border: "1px solid rgba(236,201,75,0.25)" };
+        case "no-show": return { background: "rgba(252,129,129,0.15)", color: "#fc8181", border: "1px solid rgba(252,129,129,0.25)" };
+        case "rescheduled": return { background: "rgba(118,228,247,0.15)", color: "#76e4f7", border: "1px solid rgba(118,228,247,0.25)" };
+        case "cancelled": return { background: "rgba(148,163,184,0.15)", color: "#94a3b8", border: "1px solid rgba(148,163,184,0.25)" };
+        default: return { background: "rgba(236,201,75,0.15)", color: "#ecc94b", border: "1px solid rgba(236,201,75,0.25)" };
     }
 };
 

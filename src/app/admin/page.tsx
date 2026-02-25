@@ -441,7 +441,7 @@ export default function AdminDashboardPage() {
                 }}>
                     <div>
                         <h1 style={{
-                            color: "white", fontSize: "1.5rem", margin: "0 0 0.25rem",
+                            color: "#f1f5f9", fontSize: "1.5rem", margin: "0 0 0.25rem",
                             fontFamily: "var(--font-heading)", fontWeight: 800,
                         }}>
                             {getGreeting()} 👋
@@ -449,7 +449,7 @@ export default function AdminDashboardPage() {
                         <p style={{ color: "#64748b", fontSize: "0.85rem", margin: 0, display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
                             <span style={{
                                 padding: "0.15rem 0.5rem", borderRadius: "0.3rem",
-                                background: "rgba(124,58,237,0.15)", color: "#a78bfa",
+                                background: "rgba(183,148,246,0.15)", color: "#b794f6",
                                 fontSize: "0.7rem", fontWeight: 700, fontFamily: "var(--font-heading)",
                             }}>
                                 🛡️ Administrador
@@ -466,15 +466,15 @@ export default function AdminDashboardPage() {
                         )}
                         <button onClick={() => { setRefreshing(true); fetchData(); }} style={{
                             padding: "0.4rem 0.75rem", borderRadius: "0.5rem",
-                            background: "rgba(96,165,250,0.08)", border: "1px solid rgba(96,165,250,0.15)",
+                            background: "rgba(99,179,237,0.08)", border: "1px solid rgba(99,179,237,0.15)",
                             color: "#64748b", cursor: "pointer", fontSize: "0.85rem",
                         }}>
                             ↻
                         </button>
                         <Link href="/admin/reservas" style={{
                             padding: "0.5rem 1rem", borderRadius: "0.5rem",
-                            background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)",
-                            color: "#60a5fa", textDecoration: "none", fontSize: "0.8rem",
+                            background: "rgba(99,179,237,0.12)", border: "1px solid rgba(99,179,237,0.25)",
+                            color: "#63b3ed", textDecoration: "none", fontSize: "0.8rem",
                             fontWeight: 600, fontFamily: "var(--font-heading)",
                         }}>
                             📋 Ver todas las reservas
@@ -485,11 +485,11 @@ export default function AdminDashboardPage() {
                 {/* Stats Row */}
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(175px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
                     {[
-                        { label: "Agenda confirmada", value: confirmedBookings.length, icon: "📅", gradient: "linear-gradient(135deg, #2563eb, #3b82f6)" },
-                        { label: "Pendientes de pago", value: pendingBookings.length, icon: "⏳", gradient: "linear-gradient(135deg, #d97706, #f59e0b)" },
-                        { label: "Ingresos", value: `$${totalRevenue.toLocaleString("es-MX")}`, icon: "💰", gradient: "linear-gradient(135deg, #059669, #10b981)" },
-                        { label: "Próximo servicio", value: nextBooking ? new Date(nextBooking.service_date + "T12:00:00").toLocaleDateString("es-MX", { day: "numeric", month: "short" }) : "—", icon: "🗓️", gradient: "linear-gradient(135deg, #7c3aed, #8b5cf6)" },
-                        { label: "Top Paquete", value: topPackage ? topPackage[0].split(" ").slice(0, 2).join(" ") : "—", icon: "🏆", gradient: "linear-gradient(135deg, #dc2626, #ef4444)" },
+                        { label: "Agenda confirmada", value: confirmedBookings.length, icon: "📅", gradient: "linear-gradient(135deg, #3182ce, #63b3ed)" },
+                        { label: "Pendientes de pago", value: pendingBookings.length, icon: "⏳", gradient: "linear-gradient(135deg, #d69e2e, #ecc94b)" },
+                        { label: "Ingresos", value: `$${totalRevenue.toLocaleString("es-MX")}`, icon: "💰", gradient: "linear-gradient(135deg, #2f855a, #48bb78)" },
+                        { label: "Próximo servicio", value: nextBooking ? new Date(nextBooking.service_date + "T12:00:00").toLocaleDateString("es-MX", { day: "numeric", month: "short" }) : "—", icon: "🗓️", gradient: "linear-gradient(135deg, #805ad5, #b794f6)" },
+                        { label: "Top Paquete", value: topPackage ? topPackage[0].split(" ").slice(0, 2).join(" ") : "—", icon: "🏆", gradient: "linear-gradient(135deg, #c53030, #fc8181)" },
                     ].map((stat) => (
                         <div key={stat.label} className="glass-card" style={{ padding: "1.25rem", display: "flex", alignItems: "center", gap: "1rem" }}>
                             <div style={{
@@ -501,7 +501,7 @@ export default function AdminDashboardPage() {
                                 {stat.icon}
                             </div>
                             <div>
-                                <div style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "1.2rem", color: "white" }}>{stat.value}</div>
+                                <div style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "1.2rem", color: "#f1f5f9" }}>{stat.value}</div>
                                 <div style={{ color: "#64748b", fontSize: "0.72rem", fontFamily: "var(--font-heading)" }}>{stat.label}</div>
                             </div>
                         </div>

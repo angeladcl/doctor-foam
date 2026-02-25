@@ -402,7 +402,7 @@ export default function AdminMensajes() {
                                             </span>
                                             {conv.unread_count > 0 && (
                                                 <span style={{
-                                                    background: activeTab === "invitados" ? "#10b981" : "#3b82f6",
+                                                    background: activeTab === "invitados" ? "#48bb78" : "#63b3ed",
                                                     color: "white", fontSize: "0.65rem", fontWeight: 700,
                                                     padding: "0.1rem 0.4rem", borderRadius: "1rem",
                                                     minWidth: "16px", textAlign: "center",
@@ -444,8 +444,8 @@ export default function AdminMensajes() {
                                 <div style={{
                                     width: "36px", height: "36px", borderRadius: "50%",
                                     background: activeTab === "invitados"
-                                        ? "linear-gradient(135deg, #10b981, #34d399)"
-                                        : "linear-gradient(135deg, #3b82f6, #8b5cf6)",
+                                        ? "linear-gradient(135deg, #2f855a, #48bb78)"
+                                        : "linear-gradient(135deg, #3182ce, #b794f6)",
                                     display: "flex", alignItems: "center", justifyContent: "center",
                                     color: "white", fontWeight: 700, fontSize: "0.9rem",
                                 }}>
@@ -456,8 +456,8 @@ export default function AdminMensajes() {
                                         {selectedConv.customer_name}
                                         <span style={{
                                             fontSize: "0.6rem", padding: "0.1rem 0.35rem", borderRadius: "0.3rem",
-                                            background: activeTab === "invitados" ? "rgba(16,185,129,0.15)" : "rgba(59,130,246,0.15)",
-                                            color: activeTab === "invitados" ? "#34d399" : "#60a5fa",
+                                            background: activeTab === "invitados" ? "rgba(72,187,120,0.15)" : "rgba(99,179,237,0.15)",
+                                            color: activeTab === "invitados" ? "#48bb78" : "#63b3ed",
                                             fontWeight: 600,
                                         }}>
                                             {activeTab === "invitados" ? "Invitado" : "Cliente"}
@@ -491,7 +491,7 @@ export default function AdminMensajes() {
                                                     maxWidth: "75%", padding: "0.7rem 1rem",
                                                     borderRadius: isAdmin ? "1rem 1rem 0.25rem 1rem" : "1rem 1rem 1rem 0.25rem",
                                                     background: isAdmin
-                                                        ? "linear-gradient(135deg, #2563eb, #3b82f6)"
+                                                        ? "linear-gradient(135deg, #3182ce, #63b3ed)"
                                                         : "rgba(255,255,255,0.08)",
                                                     color: isAdmin ? "white" : "#e2e8f0",
                                                     fontSize: "0.88rem", lineHeight: "1.55",
@@ -541,7 +541,7 @@ export default function AdminMensajes() {
                                     disabled={!newMessage.trim() || sending}
                                     style={{
                                         padding: "0.65rem 1.25rem", borderRadius: "0.75rem",
-                                        background: newMessage.trim() ? "linear-gradient(135deg, #2563eb, #3b82f6)" : "rgba(96,165,250,0.1)",
+                                        background: newMessage.trim() ? "linear-gradient(135deg, #3182ce, #63b3ed)" : "rgba(99,179,237,0.1)",
                                         color: "white", border: "none", cursor: newMessage.trim() ? "pointer" : "default",
                                         fontWeight: 600, fontSize: "0.85rem", fontFamily: "var(--font-heading)",
                                         transition: "all 0.2s", opacity: sending ? 0.6 : 1,
