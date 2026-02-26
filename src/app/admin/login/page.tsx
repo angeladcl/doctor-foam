@@ -26,7 +26,13 @@ export default function AdminLoginPage() {
             setError("Credenciales incorrectas.");
             setLoading(false);
         } else {
-            router.push("/admin");
+            const { data: { user }, error: refreshError } = await supabase.auth.getUser();
+            if (user?.app_metadata?.role === "admin") {
+                router.push("/admin");
+            } else {
+                // If it's a customer logging in through the admin portal
+                router.push("/mi-cuenta");
+            }
         }
     };
 

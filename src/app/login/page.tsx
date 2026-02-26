@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function CustomerLoginPage() {
     const router = useRouter();
@@ -28,7 +28,12 @@ export default function CustomerLoginPage() {
             setError("Email o contraseña incorrectos");
             setLoading(false);
         } else {
-            router.push("/mi-cuenta");
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user?.app_metadata?.role === "admin") {
+                router.push("/admin");
+            } else {
+                router.push("/mi-cuenta");
+            }
         }
     };
 
