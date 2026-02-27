@@ -1,3 +1,4 @@
+import Logo from "@/components/Logo";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -92,9 +93,7 @@ export default function BlogPage() {
             <nav className="navbar navbar-scrolled">
                 <div className="navbar-inner">
                     <Link href="/" style={{ textDecoration: "none" }}>
-                        <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "1.3rem", color: "white" }}>
-                            DOCTOR <span className="gradient-text">FOAM</span>
-                        </span>
+                        <Logo size="sm" />
                     </Link>
                     <a href="/#contacto" className="btn-premium" style={{ padding: "0.5rem 1.2rem", fontSize: "0.8rem" }}>
                         Agendar Cita

@@ -1,4 +1,6 @@
+import Logo from "@/components/Logo";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 
 /* ─── Blog content database ─── */
@@ -255,9 +257,7 @@ export default async function BlogPost({ params }: PageProps) {
             <nav className="navbar navbar-scrolled">
                 <div className="navbar-inner">
                     <Link href="/" style={{ textDecoration: "none" }}>
-                        <span style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "1.3rem", color: "white" }}>
-                            DOCTOR <span className="gradient-text">FOAM</span>
-                        </span>
+                        <Logo size="sm" />
                     </Link>
                     <a href="/#contacto" className="btn-premium" style={{ padding: "0.5rem 1.2rem", fontSize: "0.8rem" }}>
                         Agendar Cita
@@ -281,15 +281,49 @@ export default async function BlogPost({ params }: PageProps) {
                         </span>
                     </div>
 
-                    <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 2.5rem)", marginBottom: "2rem", lineHeight: "1.3" }}>
+                    <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 2.5rem)", marginBottom: "2rem", lineHeight: "1.3", color: "#0f172a" }}>
                         {post.title}
                     </h1>
 
+                    <div style={{ marginBottom: "2.5rem", borderRadius: "1rem", overflow: "hidden", position: "relative", width: "100%", height: "400px" }}>
+                        <Image
+                            src={`/blog/${slug}.png`}
+                            alt={post.title}
+                            fill
+                            style={{ objectFit: "cover" }}
+                            priority
+                        />
+                    </div>
+
                     <div
                         className="blog-content"
-                        style={{ color: "#cbd5e1", fontSize: "1rem", lineHeight: "1.9" }}
+                        style={{ color: "#334155", fontSize: "1.05rem", lineHeight: "1.9" }}
                         dangerouslySetInnerHTML={{ __html: formatMarkdown(post.content) }}
                     />
+
+                    {/* Placeholder para la galería de 4 imágenes generadas */}
+                    <div style={{ marginTop: "4rem" }}>
+                        <h3 style={{ fontSize: "1.4rem", color: "#0f172a", marginBottom: "1.5rem" }}>Galería del Servicio</h3>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem" }}>
+                            {[1, 2, 3, 4].map((i) => (
+                                <div key={i} style={{
+                                    position: "relative",
+                                    width: "100%",
+                                    paddingTop: "66.66%",
+                                    borderRadius: "0.5rem",
+                                    overflow: "hidden",
+                                    background: "#e2e8f0"
+                                }}>
+                                    <Image
+                                        src={`/blog/${slug}-inner-${i}.png`}
+                                        alt={`Detalle ${i} - ${post.title}`}
+                                        fill
+                                        style={{ objectFit: "cover" }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
 
                     <div className="glass-card" style={{ padding: "2rem", marginTop: "3rem", textAlign: "center" }}>
                         <h3 style={{ marginBottom: "1rem" }}>¿Listo para la experiencia <span className="gradient-text">Doctor Foam</span>?</h3>
@@ -307,9 +341,9 @@ export default async function BlogPost({ params }: PageProps) {
 /* Simple markdown-to-html for blog content */
 function formatMarkdown(md: string): string {
     return md
-        .replace(/^### (.+)$/gm, '<h3 style="margin-top:2rem;margin-bottom:0.75rem;font-size:1.15rem;">$1</h3>')
-        .replace(/^## (.+)$/gm, '<h2 style="margin-top:2.5rem;margin-bottom:1rem;font-size:1.4rem;">$1</h2>')
-        .replace(/\*\*(.+?)\*\*/g, "<strong style='color:white'>$1</strong>")
+        .replace(/^### (.+)$/gm, '<h3 style="margin-top:2rem;margin-bottom:0.75rem;font-size:1.15rem;color:#0f172a;">$1</h3>')
+        .replace(/^## (.+)$/gm, '<h2 style="margin-top:2.5rem;margin-bottom:1rem;font-size:1.4rem;color:#0f172a;">$1</h2>')
+        .replace(/\*\*(.+?)\*\*/g, "<strong style='color:#0f172a'>$1</strong>")
         .replace(/\*(.+?)\*/g, "<em>$1</em>")
         .replace(/^\d+\. (.+)$/gm, '<li style="margin-bottom:0.5rem;margin-left:1.5rem;">$1</li>')
         .replace(/^- (.+)$/gm, '<li style="margin-bottom:0.5rem;margin-left:1.5rem;list-style:disc;">$1</li>')

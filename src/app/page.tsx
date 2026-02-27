@@ -166,8 +166,8 @@ const packages = [
     ],
     upgrade: {
       name: "Graphene Shield",
-      price: "$17,999",
-      pickupPrice: "$20,699",
+      price: "$14,999",
+      pickupPrice: "$17,249",
       desc: "Supera al cerámico en dureza e hidrofobicidad. Protección de 5 a 7 años.",
     },
     featured: false,
@@ -562,158 +562,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── SERVICES ─── */}
-      <section className="section-padding" id="servicios" style={{ background: "#f1f5f9" }}>
-        <div className="container" style={{ textAlign: "center" }}>
-          <div className="animate-on-scroll">
-            <span className="section-label">Nuestros Paquetes</span>
-            <h2 className="section-title">
-              Cada servicio, un <span className="gradient-text">estándar superior</span>
-            </h2>
-            <p className="section-subtitle">
-              No somos un lavado de autos. Somos un centro de estética automotriz portátil con
-              maquinaria industrial y técnicos certificados IDA.
-            </p>
-            {/* ECO Badge */}
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", background: "linear-gradient(135deg, #dcfce7, #bbf7d0)", padding: "0.5rem 1.2rem", borderRadius: "2rem", marginTop: "1rem", fontSize: "0.85rem", color: "#166534", fontWeight: 600 }}>
-              🌿 Certificación Sello ECO · 45% menos consumo de agua
-            </div>
-          </div>
-
-          {/* Main Packages — Horizontal Cards */}
-          <div style={{ marginTop: "2.5rem", display: "flex", flexDirection: "column", gap: "2rem" }}>
-            {mainServices.map((s, i) => (
-              <div key={i} className="glass-card animate-on-scroll service-card-horizontal" style={{ display: "flex", gap: "0", overflow: "hidden", cursor: "pointer", transition: "transform 0.3s ease, box-shadow 0.3s ease" }}>
-                {/* Image Side */}
-                <div className="service-card-image" style={{
-                  flex: "0 0 340px",
-                  minHeight: "280px",
-                  background: `linear-gradient(135deg, rgba(37,99,235,0.08), rgba(37,99,235,0.15))`,
-                  backgroundImage: `url(${s.image})`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  position: "relative",
-                }}>
-                  {/* Fallback icon if no image loaded */}
-                  <span style={{ fontSize: "4rem", opacity: 0.3, position: "absolute" }}>{s.icon}</span>
-                </div>
-
-                {/* Content Side */}
-                <div className="service-card-content" style={{ flex: 1, padding: "2rem 2.5rem", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                  <span style={{ color: "#2563eb", fontSize: "0.8rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.5rem", fontFamily: "var(--font-heading)" }}>{s.tagline}</span>
-                  <h3 style={{ fontSize: "1.5rem", marginBottom: "0.75rem", fontFamily: "var(--font-heading)" }}>
-                    <span style={{ marginRight: "0.5rem" }}>{s.icon}</span>{s.title}
-                  </h3>
-                  <p className="service-card-desc" style={{ color: "#475569", fontSize: "0.9rem", lineHeight: "1.8", marginBottom: "1.25rem" }}>{s.desc}</p>
-
-                  {/* Highlights */}
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1.5rem" }}>
-                    {s.highlights.map((h, j) => (
-                      <span key={j} style={{
-                        background: "rgba(37,99,235,0.08)",
-                        color: "#2563eb",
-                        fontSize: "0.75rem",
-                        fontWeight: 600,
-                        padding: "0.3rem 0.8rem",
-                        borderRadius: "2rem",
-                        fontFamily: "var(--font-heading)",
-                      }}>{h}</span>
-                    ))}
-                  </div>
-
-                  <Link href={`/reservar?paquete=${s.bookingId}`} className="btn-premium" style={{ alignSelf: "flex-start", padding: "0.7rem 2rem", fontSize: "0.85rem" }}>
-                    Reservar {s.title}
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-
-
-          {/* ─── Subscription Plans ─── */}
-          <div style={{ marginTop: "3rem" }}>
-            <div className="animate-on-scroll">
-              <span className="section-label">Suscripciones</span>
-              <h3 className="section-title" style={{ fontSize: "1.8rem" }}>
-                Planes de <span className="gradient-text">pago recurrente</span>
-              </h3>
-              <p className="section-subtitle">
-                Mantén tu auto impecable con pagos mensuales automáticos. Cancela cuando quieras.
-              </p>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "2rem", maxWidth: "900px", margin: "0 auto" }}>
-              {/* Foam Maintenance Card */}
-              <div className="glass-card animate-on-scroll" style={{ padding: "2rem", textAlign: "left", display: "flex", flexDirection: "column" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem" }}>
-                  <span style={{ fontSize: "2.5rem" }}>{foamMaintenance.icon}</span>
-                  <div>
-                    <h3 style={{ fontSize: "1.2rem", marginBottom: "0.25rem" }}>{foamMaintenance.title}</h3>
-                    <span style={{ color: "#16a34a", fontSize: "0.75rem", fontWeight: 600, background: "#dcfce7", padding: "0.2rem 0.6rem", borderRadius: "1rem" }}>
-                      Pago mensual · Recurrente
-                    </span>
-                  </div>
-                </div>
-                <p style={{ color: "#475569", fontSize: "0.88rem", marginBottom: "1rem", lineHeight: "1.7", flex: 1 }}>{foamMaintenance.desc}</p>
-                <div style={{ marginBottom: "0.25rem" }}>
-                  <span className="gradient-text" style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "2rem" }}>$1,800</span>
-                  <span style={{ color: "#64748b", fontSize: "0.9rem", marginLeft: "0.25rem" }}>MXN / mes</span>
-                </div>
-                <p style={{ color: "#94a3b8", fontSize: "0.75rem", marginBottom: "1.25rem" }}>IVA incluido · Facturable · {foamMaintenance.note}</p>
-                <a
-                  href="https://buy.stripe.com/4gM00kclRcDc8e92Zg3ZK03"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-premium"
-                  style={{ width: "100%", justifyContent: "center", textAlign: "center" }}
-                >
-                  🔄 Suscribirme
-                </a>
-              </div>
-
-              {/* Membresía Card */}
-              <div className="glass-card animate-on-scroll" style={{ padding: "2rem", textAlign: "center", border: "2px solid rgba(37,99,235,0.15)", display: "flex", flexDirection: "column" }}>
-                <span style={{ display: "inline-block", padding: "0.25rem 1rem", background: "linear-gradient(135deg, #2563eb, #3b82f6)", color: "#ffffff", fontFamily: "var(--font-heading)", fontSize: "0.7rem", fontWeight: 700, borderRadius: "2rem", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "1rem", alignSelf: "center" }}>
-                  Mejor Valor
-                </span>
-                <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>{membership.icon}</div>
-                <h3 style={{ fontSize: "1.3rem", marginBottom: "0.5rem" }}>{membership.title}</h3>
-                <div className="gradient-text" style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "2.5rem", marginBottom: "0.25rem" }}>
-                  {membership.price}
-                </div>
-                <p style={{ color: "#64748b", fontSize: "0.9rem", marginBottom: "0.25rem" }}>{membership.priceLabel}</p>
-                <span style={{ color: "#16a34a", fontSize: "0.75rem", fontWeight: 600, background: "#dcfce7", padding: "0.2rem 0.6rem", borderRadius: "1rem", display: "inline-block", marginBottom: "1.25rem" }}>
-                  Pago mensual · Recurrente
-                </span>
-                <ul style={{ listStyle: "none", padding: 0, textAlign: "left", maxWidth: "320px", margin: "0 auto 1.5rem", flex: 1 }}>
-                  {membership.features.map((f, i) => (
-                    <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", marginBottom: "0.75rem", color: "#334155", fontSize: "0.9rem" }}>
-                      <span style={{ color: "#2563eb", fontWeight: 700, flexShrink: 0 }}>✓</span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <a
-                  href="https://buy.stripe.com/cNi28s71x8mW0LH43k3ZK04"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-premium"
-                  style={{ width: "100%", justifyContent: "center", textAlign: "center" }}
-                >
-                  🔄 Suscribirme
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ─── PRICING ─── */}
       <section className="section-padding" id="precios">
         <div className="container" style={{ textAlign: "center" }}>
@@ -809,6 +657,164 @@ export default function HomePage() {
                 </div>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── SERVICES ─── */}
+      <section className="section-padding" id="servicios" style={{ background: "#f1f5f9" }}>
+        <div className="container" style={{ textAlign: "center" }}>
+          <div className="animate-on-scroll">
+            <span className="section-label">Nuestros Paquetes</span>
+            <h2 className="section-title">
+              Cada servicio, un <span className="gradient-text">estándar superior</span>
+            </h2>
+            <p className="section-subtitle">
+              No somos un lavado de autos. Somos un centro de estética automotriz portátil con
+              maquinaria industrial y técnicos certificados IDA.
+            </p>
+            {/* ECO Badge */}
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", background: "linear-gradient(135deg, #dcfce7, #bbf7d0)", padding: "0.5rem 1.2rem", borderRadius: "2rem", marginTop: "1rem", fontSize: "0.85rem", color: "#166534", fontWeight: 600 }}>
+              🌿 Certificación Sello ECO · 45% menos consumo de agua
+            </div>
+          </div>
+
+          {/* Main Packages — Horizontal Cards */}
+          <div style={{ marginTop: "2.5rem", display: "flex", flexDirection: "column", gap: "2rem" }}>
+            {mainServices.map((s, i) => (
+              <div key={i} className="glass-card animate-on-scroll service-card-horizontal" style={{ display: "flex", gap: "0", overflow: "hidden", cursor: "pointer", transition: "transform 0.3s ease, box-shadow 0.3s ease" }}>
+                {/* Image Side */}
+                <div className="service-card-image" style={{
+                  flex: "0 0 340px",
+                  minHeight: "280px",
+                  background: `linear-gradient(135deg, rgba(37,99,235,0.08), rgba(37,99,235,0.15))`,
+                  backgroundImage: `url(${s.image})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  position: "relative",
+                }}>
+                  {/* Fallback icon if no image loaded */}
+                  <span style={{ fontSize: "4rem", opacity: 0.3, position: "absolute" }}>{s.icon}</span>
+                </div>
+
+                {/* Content Side */}
+                <div className="service-card-content" style={{ flex: 1, padding: "2rem 2.5rem", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                  <span style={{ color: "#2563eb", fontSize: "0.8rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "0.5rem", fontFamily: "var(--font-heading)" }}>{s.tagline}</span>
+                  <h3 style={{ fontSize: "1.5rem", marginBottom: "0.75rem", fontFamily: "var(--font-heading)" }}>
+                    <span style={{ marginRight: "0.5rem" }}>{s.icon}</span>{s.title}
+                  </h3>
+                  <p className="service-card-desc" style={{ color: "#475569", fontSize: "0.9rem", lineHeight: "1.8", marginBottom: "1.25rem" }}>{s.desc}</p>
+
+                  {/* Highlights */}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginBottom: "1.5rem" }}>
+                    {s.highlights.map((h, j) => (
+                      <span key={j} style={{
+                        background: "rgba(37,99,235,0.08)",
+                        color: "#2563eb",
+                        fontSize: "0.75rem",
+                        fontWeight: 600,
+                        padding: "0.3rem 0.8rem",
+                        borderRadius: "2rem",
+                        fontFamily: "var(--font-heading)",
+                      }}>{h}</span>
+                    ))}
+                  </div>
+
+                  <Link href={`/reservar?paquete=${s.bookingId}`} className="btn-premium" style={{ alignSelf: "flex-start", padding: "0.7rem 2rem", fontSize: "0.85rem" }}>
+                    Reservar {s.title}
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+
+
+                  </div>
+      </section>
+
+      {/* ─── PAGO RECURRENTE ─── */}
+      <section className="section-padding" id="recurrente">
+        <div className="container" style={{ textAlign: "center" }}>
+          {/* ─── Subscription Plans ─── */}
+          <div style={{ marginTop: "3rem" }}>
+            <div className="animate-on-scroll">
+              <span className="section-label">Suscripciones</span>
+              <h3 className="section-title" style={{ fontSize: "1.8rem" }}>
+                Planes de <span className="gradient-text">pago recurrente</span>
+              </h3>
+              <p className="section-subtitle">
+                Mantén tu auto impecable con pagos mensuales automáticos. Cancela cuando quieras.
+              </p>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "2rem", maxWidth: "900px", margin: "0 auto" }}>
+              {/* Foam Maintenance Card */}
+              <div className="glass-card animate-on-scroll" style={{ padding: "2rem", textAlign: "left", display: "flex", flexDirection: "column" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1rem" }}>
+                  <span style={{ fontSize: "2.5rem" }}>{foamMaintenance.icon}</span>
+                  <div>
+                    <h3 style={{ fontSize: "1.2rem", marginBottom: "0.25rem" }}>{foamMaintenance.title}</h3>
+                    <span style={{ color: "#16a34a", fontSize: "0.75rem", fontWeight: 600, background: "#dcfce7", padding: "0.2rem 0.6rem", borderRadius: "1rem" }}>
+                      Pago mensual · Recurrente
+                    </span>
+                  </div>
+                </div>
+                <p style={{ color: "#475569", fontSize: "0.88rem", marginBottom: "1rem", lineHeight: "1.7", flex: 1 }}>{foamMaintenance.desc}</p>
+                <div style={{ marginBottom: "0.25rem" }}>
+                  <span className="gradient-text" style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "2rem" }}>$1,800</span>
+                  <span style={{ color: "#64748b", fontSize: "0.9rem", marginLeft: "0.25rem" }}>MXN / mes</span>
+                </div>
+                <p style={{ color: "#94a3b8", fontSize: "0.75rem", marginBottom: "1.25rem" }}>IVA incluido · Facturable · {foamMaintenance.note}</p>
+                <a
+                  href="https://buy.stripe.com/4gM00kclRcDc8e92Zg3ZK03"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-premium"
+                  style={{ width: "100%", justifyContent: "center", textAlign: "center" }}
+                >
+                  🔄 Suscribirme
+                </a>
+              </div>
+
+              {/* Membresía Card */}
+              <div className="glass-card animate-on-scroll" style={{ padding: "2rem", textAlign: "center", border: "2px solid rgba(37,99,235,0.15)", display: "flex", flexDirection: "column" }}>
+                <span style={{ display: "inline-block", padding: "0.25rem 1rem", background: "linear-gradient(135deg, #2563eb, #3b82f6)", color: "#ffffff", fontFamily: "var(--font-heading)", fontSize: "0.7rem", fontWeight: 700, borderRadius: "2rem", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "1rem", alignSelf: "center" }}>
+                  Mejor Valor
+                </span>
+                <div style={{ fontSize: "2.5rem", marginBottom: "0.5rem" }}>{membership.icon}</div>
+                <h3 style={{ fontSize: "1.3rem", marginBottom: "0.5rem" }}>{membership.title}</h3>
+                <div className="gradient-text" style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "2.5rem", marginBottom: "0.25rem" }}>
+                  {membership.price}
+                </div>
+                <p style={{ color: "#64748b", fontSize: "0.9rem", marginBottom: "0.25rem" }}>{membership.priceLabel}</p>
+                <span style={{ color: "#16a34a", fontSize: "0.75rem", fontWeight: 600, background: "#dcfce7", padding: "0.2rem 0.6rem", borderRadius: "1rem", display: "inline-block", marginBottom: "1.25rem" }}>
+                  Pago mensual · Recurrente
+                </span>
+                <ul style={{ listStyle: "none", padding: 0, textAlign: "left", maxWidth: "320px", margin: "0 auto 1.5rem", flex: 1 }}>
+                  {membership.features.map((f, i) => (
+                    <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", marginBottom: "0.75rem", color: "#334155", fontSize: "0.9rem" }}>
+                      <span style={{ color: "#2563eb", fontWeight: 700, flexShrink: 0 }}>✓</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href="https://buy.stripe.com/cNi28s71x8mW0LH43k3ZK04"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-premium"
+                  style={{ width: "100%", justifyContent: "center", textAlign: "center" }}
+                >
+                  🔄 Suscribirme
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -948,7 +954,56 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── FAQ ─── */}
+      
+      {/* ─── BLOG CAROUSEL ─── */}
+      <section className="section-padding" id="blog" style={{ background: "#ffffff" }}>
+        <div className="container" style={{ textAlign: "center" }}>
+          <div className="animate-on-scroll">
+            <span className="section-label">Aprende con Nosotros</span>
+            <h2 className="section-title">
+              Últimos artículos del <span className="gradient-text">Blog</span>
+            </h2>
+          </div>
+
+          <div style={{ 
+            display: "flex", 
+            gap: "2rem", 
+            overflowX: "auto", 
+            paddingBottom: "2rem", 
+            marginTop: "3rem",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none"
+          }}>
+            {/* Array is mapped over statically to prevent build errors since it's a client component */}
+            {[
+              { slug: "guia-completa-recubrimiento-ceramico", title: "Guía Completa: Recubrimiento Cerámico en CDMX", cat: "Protección" },
+              { slug: "5-errores-lavado-auto-premium", title: "5 Errores que Arruinan la Pintura de tu Auto", cat: "Cuidado" },
+              { slug: "detallado-interior-profundo-que-incluye", title: "¿Qué Incluye un Detallado Interior Profundo?", cat: "Servicios" },
+              { slug: "correccion-pintura-swirls-guia", title: "Cómo Eliminar Swirls y Micro-rayones", cat: "Corrección" },
+              { slug: "por-que-detallado-domicilio-mejor", title: "¿Por Qué el Detallado a Domicilio Supera al Taller?", cat: "Tendencias" },
+              { slug: "mejores-ceras-selladores-mexico", title: "Las Mejores Ceras y Selladores en México", cat: "Productos" }
+            ].map((b, i) => (
+              <a key={i} href={`/blog/${b.slug}`} className="glass-card animate-on-scroll" style={{ 
+                minWidth: "320px", 
+                maxWidth: "320px",
+                flexShrink: 0,
+                textAlign: "left",
+                textDecoration: "none",
+                display: "block",
+                overflow: "hidden"
+              }}>
+                <div style={{ height: "200px", backgroundImage: `url(/blog/${b.slug}.png)`, backgroundSize: "cover", backgroundPosition: "center" }} />
+                <div style={{ padding: "1.5rem" }}>
+                  <span className="zone-tag zone-tag-gold" style={{ marginBottom: "0.5rem" }}>{b.cat}</span>
+                  <h3 style={{ fontSize: "1.1rem", color: "#0f172a", marginTop: "0.5rem" }}>{b.title}</h3>
+                  <p style={{ color: "var(--color-gold-400)", fontSize: "0.85rem", marginTop: "1rem", fontWeight: 600 }}>Leer artículo →</p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+{/* ─── FAQ ─── */}
       <section className="section-padding" id="faq">
         <div className="container" style={{ maxWidth: "800px" }}>
           <div className="animate-on-scroll" style={{ textAlign: "center" }}>
