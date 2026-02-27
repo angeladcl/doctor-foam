@@ -137,9 +137,9 @@ export async function POST(request: NextRequest) {
         console.error("Chat email notification error:", emailErr);
     }
 
-    // Push notification to admins (async, don't block)
-    if (sender_role === "customer") {
-        try {
+    // Push notification (async, don't block)
+    try {
+        if (sender_role === "customer") {
             const { sendPushToAdmins } = await import("@/lib/web-push");
             const senderName = auth.user.user_metadata?.full_name || auth.user.email || "Cliente";
             await sendPushToAdmins({
@@ -147,9 +147,33 @@ export async function POST(request: NextRequest) {
                 body: content.trim().slice(0, 120),
                 url: "/admin/mensajes",
             });
-        } catch (pushErr) {
-            console.error("Push notification error:", pushErr);
+        } else {
+            // Admin sending to customer
+            const { sendPushNotification } = await import("@/lib/web-push");
+
+            // We need to know the customer_id for this conversation to send them a push
+            let customerId = auth.user.id;
+            if (sender_role === "admin") {
+                const { data: convData } = await auth.supabase
+                    .from("chat_conversations")
+                    .select("customer_id")
+                    .eq("id", convId)
+                    .single();
+                if (convData) {
+                    customerId = convData.customer_id;
+                }
+            }
+
+            if (customerId && customerId !== auth.user.id) { // Ensure admin isn't sending to self
+                await sendPushNotification(customerId, {
+                    title: "💬 Nuevo mensaje de Doctor Foam",
+                    body: content.trim().slice(0, 120),
+                    url: "/mi-cuenta/chat",
+                });
+            }
         }
+    } catch (pushErr) {
+        console.error("Push notification error:", pushErr);
     }
 
     return NextResponse.json({ message });

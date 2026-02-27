@@ -133,16 +133,27 @@ export async function POST(request: NextRequest) {
                         console.error("Error sending emails:", emailErr);
                     }
 
-                    // 4. Send Push Notification to Admins
+                    // 4. Send Push Notification to Admins and Customer
                     try {
-                        const { sendPushToAdmins } = await import("@/lib/web-push");
+                        const { sendPushToAdmins, sendPushNotification } = await import("@/lib/web-push");
+
+                        // Notify Admins
                         await sendPushToAdmins({
                             title: "💰 ¡Nueva Venta Exclusiva!",
                             body: `Se ha confirmado el pago de ${booking.customer_name} por $${((booking.total_amount || 0) / 100).toFixed(2)} MXN.`,
                             url: "/admin/reservas",
                         });
+
+                        // Notify Customer
+                        if (customerId) {
+                            await sendPushNotification(customerId, {
+                                title: "✅ ¡Reserva Confirmada!",
+                                body: `Tu cita para ${booking.package_name} ha sido agendada con éxito.`,
+                                url: "/mi-cuenta/servicios",
+                            });
+                        }
                     } catch (pushErr) {
-                        console.error("Error sending push to admins:", pushErr);
+                        console.error("Error sending push to admins/customer:", pushErr);
                     }
                 }
             }
