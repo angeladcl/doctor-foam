@@ -104,10 +104,14 @@ function GuestChatInner() {
     const sendMessage = async () => {
         if (!input.trim() || sending) return;
         setSending(true);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
         try {
             const res = await fetch("/api/guest-chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
+                signal: controller.signal,
                 body: JSON.stringify({
                     session_id: sessionId,
                     content: input.trim(),
@@ -115,6 +119,7 @@ function GuestChatInner() {
                     guest_email: email || undefined,
                 }),
             });
+            clearTimeout(timeoutId);
             if (res.ok) {
                 const data = await res.json();
                 setMessages(prev => [...prev, data.message]);

@@ -1,10 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
+import { createServerSupabase } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
 
-const getSupabaseAdmin = () => createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+const getSupabaseAdmin = () => createServerSupabase();
 
 /* GET — Messages for a guest session */
 export async function GET(request: NextRequest) {
@@ -37,87 +34,92 @@ export async function GET(request: NextRequest) {
 
 /* POST — Guest sends a message */
 export async function POST(request: NextRequest) {
-    const body = await request.json();
-    const { session_id, content, guest_name, guest_email } = body;
+    try {
+        const body = await request.json();
+        const { session_id, content, guest_name, guest_email } = body;
 
-    if (!session_id || !content?.trim()) {
-        return NextResponse.json({ error: "Faltan campos" }, { status: 400 });
-    }
+        if (!session_id || !content?.trim()) {
+            return NextResponse.json({ error: "Faltan campos" }, { status: 400 });
+        }
 
-    // Find or create conversation
-    let { data: conv } = await getSupabaseAdmin()
-        .from("guest_conversations")
-        .select("*")
-        .eq("session_id", session_id)
-        .single();
-
-    if (!conv) {
-        const { data: newConv, error: convErr } = await getSupabaseAdmin()
+        // Find or create conversation
+        let { data: conv } = await getSupabaseAdmin()
             .from("guest_conversations")
+            .select("*")
+            .eq("session_id", session_id)
+            .single();
+
+        if (!conv) {
+            const { data: newConv, error: convErr } = await getSupabaseAdmin()
+                .from("guest_conversations")
+                .insert({
+                    session_id,
+                    guest_name: guest_name || "Visitante",
+                    guest_email: guest_email || null,
+                })
+                .select()
+                .single();
+
+            if (convErr) return NextResponse.json({ error: convErr.message }, { status: 500 });
+            conv = newConv;
+        } else if (guest_name || guest_email) {
+            // Update name/email if provided
+            const updates: Record<string, string> = {};
+            if (guest_name) updates.guest_name = guest_name;
+            if (guest_email) updates.guest_email = guest_email;
+            await getSupabaseAdmin()
+                .from("guest_conversations")
+                .update(updates)
+                .eq("id", conv.id);
+        }
+
+        // Insert message
+        const { data: message, error } = await getSupabaseAdmin()
+            .from("guest_messages")
             .insert({
-                session_id,
-                guest_name: guest_name || "Visitante",
-                guest_email: guest_email || null,
+                conversation_id: conv!.id,
+                sender_role: "guest",
+                content: content.trim(),
             })
             .select()
             .single();
 
-        if (convErr) return NextResponse.json({ error: convErr.message }, { status: 500 });
-        conv = newConv;
-    } else if (guest_name || guest_email) {
-        // Update name/email if provided
-        const updates: Record<string, string> = {};
-        if (guest_name) updates.guest_name = guest_name;
-        if (guest_email) updates.guest_email = guest_email;
+        if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+        // Update last_message_at
         await getSupabaseAdmin()
             .from("guest_conversations")
-            .update(updates)
-            .eq("id", conv.id);
+            .update({ last_message_at: new Date().toISOString(), status: "open" })
+            .eq("id", conv!.id);
+
+        // Email notification to admin (async)
+        try {
+            const { sendChatNotification } = await import("@/lib/email");
+            sendChatNotification({
+                recipientEmail: process.env.ADMIN_EMAIL || "info@drfoam.com.mx",
+                recipientName: "Admin",
+                senderName: guest_name || "Visitante",
+                messagePreview: content.trim().slice(0, 100),
+            }).catch(e => console.error("Guest chat email background error:", e));
+        } catch (emailErr) {
+            console.error("Guest chat email error:", emailErr);
+        }
+
+        // Push notification to admins (async, don't block)
+        try {
+            const { sendPushToAdmins } = await import("@/lib/web-push");
+            sendPushToAdmins({
+                title: `💬 Mensaje de ${guest_name || "Visitante"}`,
+                body: content.trim().slice(0, 120),
+                url: "/admin/mensajes",
+            }).catch(e => console.error("Guest push background error:", e));
+        } catch (pushErr) {
+            console.error("Guest push notification error:", pushErr);
+        }
+
+        return NextResponse.json({ message, conversation: conv });
+    } catch (globalErr: any) {
+        console.error("GLOBAL API ERROR:", globalErr);
+        return NextResponse.json({ error: globalErr.message, stack: globalErr.stack }, { status: 500 });
     }
-
-    // Insert message
-    const { data: message, error } = await getSupabaseAdmin()
-        .from("guest_messages")
-        .insert({
-            conversation_id: conv!.id,
-            sender_role: "guest",
-            content: content.trim(),
-        })
-        .select()
-        .single();
-
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-
-    // Update last_message_at
-    await getSupabaseAdmin()
-        .from("guest_conversations")
-        .update({ last_message_at: new Date().toISOString(), status: "open" })
-        .eq("id", conv!.id);
-
-    // Email notification to admin (async)
-    try {
-        const { sendChatNotification } = await import("@/lib/email");
-        await sendChatNotification({
-            recipientEmail: process.env.ADMIN_EMAIL || "info@drfoam.com.mx",
-            recipientName: "Admin",
-            senderName: guest_name || "Visitante",
-            messagePreview: content.trim().slice(0, 100),
-        });
-    } catch (emailErr) {
-        console.error("Guest chat email error:", emailErr);
-    }
-
-    // Push notification to admins (async, don't block)
-    try {
-        const { sendPushToAdmins } = await import("@/lib/web-push");
-        await sendPushToAdmins({
-            title: `💬 Mensaje de ${guest_name || "Visitante"}`,
-            body: content.trim().slice(0, 120),
-            url: "/admin/mensajes",
-        });
-    } catch (pushErr) {
-        console.error("Guest push notification error:", pushErr);
-    }
-
-    return NextResponse.json({ message, conversation: conv });
 }
