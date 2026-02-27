@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
-const supabaseAdmin = createClient(
+const getSupabaseAdmin = () => createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Find or return empty
-    const { data: conv } = await supabaseAdmin
+    const { data: conv } = await getSupabaseAdmin()
         .from("guest_conversations")
         .select("*")
         .eq("session_id", sessionId)
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ conversation: null, messages: [] });
     }
 
-    const { data: messages } = await supabaseAdmin
+    const { data: messages } = await getSupabaseAdmin()
         .from("guest_messages")
         .select("*")
         .eq("conversation_id", conv.id)
@@ -45,14 +45,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Find or create conversation
-    let { data: conv } = await supabaseAdmin
+    let { data: conv } = await getSupabaseAdmin()
         .from("guest_conversations")
         .select("*")
         .eq("session_id", session_id)
         .single();
 
     if (!conv) {
-        const { data: newConv, error: convErr } = await supabaseAdmin
+        const { data: newConv, error: convErr } = await getSupabaseAdmin()
             .from("guest_conversations")
             .insert({
                 session_id,
@@ -69,14 +69,14 @@ export async function POST(request: NextRequest) {
         const updates: Record<string, string> = {};
         if (guest_name) updates.guest_name = guest_name;
         if (guest_email) updates.guest_email = guest_email;
-        await supabaseAdmin
+        await getSupabaseAdmin()
             .from("guest_conversations")
             .update(updates)
             .eq("id", conv.id);
     }
 
     // Insert message
-    const { data: message, error } = await supabaseAdmin
+    const { data: message, error } = await getSupabaseAdmin()
         .from("guest_messages")
         .insert({
             conversation_id: conv!.id,
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     // Update last_message_at
-    await supabaseAdmin
+    await getSupabaseAdmin()
         .from("guest_conversations")
         .update({ last_message_at: new Date().toISOString(), status: "open" })
         .eq("id", conv!.id);
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
 
     // Push notification to admins (async, don't block)
     try {
-        const { sendPushToAdmins } = await import("@/lib/push-notify");
+        const { sendPushToAdmins } = await import("@/lib/web-push");
         await sendPushToAdmins({
             title: `💬 Mensaje de ${guest_name || "Visitante"}`,
             body: content.trim().slice(0, 120),

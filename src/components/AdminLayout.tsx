@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
+import InstallPrompt from "./InstallPrompt";
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
 
@@ -503,6 +504,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                     }
                 }
             `}</style>
+            <InstallPrompt />
         </div>
     );
 }

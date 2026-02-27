@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseAdmin = createClient(
+const getSupabaseAdmin = () => createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     // Unread count only
     if (searchParams.get("unread") === "true") {
-        const { count } = await supabaseAdmin
+        const { count } = await getSupabaseAdmin()
             .from("guest_messages")
             .select("*", { count: "exact", head: true })
             .eq("sender_role", "guest")
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     // Get specific conversation messages
     const convId = searchParams.get("conversation_id");
     if (convId) {
-        const { data: messages, error } = await supabaseAdmin
+        const { data: messages, error } = await getSupabaseAdmin()
             .from("guest_messages")
             .select("*")
             .eq("conversation_id", convId)
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     }
 
     // List all conversations with unread counts
-    const { data: conversations, error } = await supabaseAdmin
+    const { data: conversations, error } = await getSupabaseAdmin()
         .from("guest_conversations")
         .select("*")
         .order("last_message_at", { ascending: false });
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
 
     const enriched = await Promise.all(
         (conversations || []).map(async (conv) => {
-            const { count: unreadCount } = await supabaseAdmin
+            const { count: unreadCount } = await getSupabaseAdmin()
                 .from("guest_messages")
                 .select("*", { count: "exact", head: true })
                 .eq("conversation_id", conv.id)
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Faltan campos" }, { status: 400 });
     }
 
-    const { data: message, error } = await supabaseAdmin
+    const { data: message, error } = await getSupabaseAdmin()
         .from("guest_messages")
         .insert({
             conversation_id,
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
     // Update last_message_at
-    await supabaseAdmin
+    await getSupabaseAdmin()
         .from("guest_conversations")
         .update({ last_message_at: new Date().toISOString() })
         .eq("id", conversation_id);
@@ -117,7 +117,7 @@ export async function PATCH(request: NextRequest) {
     const { conversation_id } = await request.json();
     if (!conversation_id) return NextResponse.json({ error: "Falta conversation_id" }, { status: 400 });
 
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
         .from("guest_messages")
         .update({ read: true })
         .eq("conversation_id", conversation_id)

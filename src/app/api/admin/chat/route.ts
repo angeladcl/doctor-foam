@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseAdmin = createClient(
+const getSupabaseAdmin = () => createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
     // Unread count for badge
     if (searchParams.get("unread") === "true") {
-        const { count, error } = await supabaseAdmin
+        const { count, error } = await getSupabaseAdmin()
             .from("chat_messages")
             .select("*", { count: "exact", head: true })
             .eq("sender_role", "customer")
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     }
 
     // List all conversations with customer info and unread count
-    const { data: conversations, error } = await supabaseAdmin
+    const { data: conversations, error } = await getSupabaseAdmin()
         .from("chat_conversations")
         .select("*")
         .order("last_message_at", { ascending: false });
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     const enriched = await Promise.all(
         (conversations || []).map(async (conv) => {
             // Get customer profile
-            const { data: profile } = await supabaseAdmin
+            const { data: profile } = await getSupabaseAdmin()
                 .from("customer_profiles")
                 .select("full_name")
                 .eq("id", conv.customer_id)
@@ -59,12 +59,12 @@ export async function GET(request: NextRequest) {
             // Get customer email from auth
             let customerEmail = "";
             try {
-                const { data: { user: cUser } } = await supabaseAdmin.auth.admin.getUserById(conv.customer_id);
+                const { data: { user: cUser } } = await getSupabaseAdmin().auth.admin.getUserById(conv.customer_id);
                 customerEmail = cUser?.email || "";
             } catch { /* silent */ }
 
             // Count unread messages
-            const { count: unreadCount } = await supabaseAdmin
+            const { count: unreadCount } = await getSupabaseAdmin()
                 .from("chat_messages")
                 .select("*", { count: "exact", head: true })
                 .eq("conversation_id", conv.id)

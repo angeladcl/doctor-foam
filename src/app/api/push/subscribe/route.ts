@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
-const supabaseAdmin = createClient(
+const getSupabaseAdmin = () => createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Upsert: update keys if endpoint already exists, insert otherwise
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
         .from("push_subscriptions")
         .upsert(
             {
@@ -55,7 +55,7 @@ export async function DELETE(request: NextRequest) {
     const { endpoint } = await request.json();
     if (!endpoint) return NextResponse.json({ error: "Falta endpoint" }, { status: 400 });
 
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
         .from("push_subscriptions")
         .delete()
         .eq("endpoint", endpoint)

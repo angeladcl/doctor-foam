@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
     // Push notification to admins (async, don't block)
     if (sender_role === "customer") {
         try {
-            const { sendPushToAdmins } = await import("@/lib/push-notify");
+            const { sendPushToAdmins } = await import("@/lib/web-push");
             const senderName = auth.user.user_metadata?.full_name || auth.user.email || "Cliente";
             await sendPushToAdmins({
                 title: `💬 Mensaje de ${senderName}`,

@@ -271,6 +271,46 @@ export async function sendServiceReminder(data: { customerName: string; customer
 }
 
 /* ═══════════════════════════════════════════════
+   6. RECORDATORIO DE PAGO (Link manual)
+   ═══════════════════════════════════════════════ */
+export async function sendPaymentReminderEmail(data: {
+  customerName: string;
+  customerEmail: string;
+  packageName: string;
+  totalAmount: number;
+  paymentLink: string;
+}) {
+  try {
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: data.customerEmail,
+      subject: `[RECORDATORIO] Pago pendiente de servicio - Doctor Foam`,
+      html: `${emailHeader("Pago Pendiente")}
+    <div style="background:white;padding:2rem;border-radius:12px;box-shadow:0 10px 25px rgba(0,0,0,0.05);margin:0 1rem;transform:translateY(-1rem);border:1px solid #e2e8f0;">
+      <p style="color:#334155;font-size:1.05rem;margin-bottom:1.5rem;">Hola <strong style="color:#1e293b;">${data.customerName}</strong>,</p>
+      <p style="color:#64748b;line-height:1.6;margin-bottom:1.5rem;">Te recordamos que tienes un pago pendiente para asegurar tu reserva del servicio <strong>${data.packageName}</strong>.</p>
+      
+      <div style="background:#f8fafc;border-radius:8px;padding:1.5rem;text-align:center;margin-bottom:2rem;">
+        <span style="display:block;color:#64748b;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;font-weight:600;">Monto a pagar</span>
+        <span style="font-size:2rem;font-weight:800;color:#1e293b;letter-spacing:-0.5px;">${formatCurrency(data.totalAmount)}</span>
+      </div>
+
+      <div style="text-align:center;margin-bottom:1rem;">
+        <a href="${data.paymentLink}" style="display:inline-block;background:linear-gradient(135deg,#2563eb,#3b82f6);color:white;text-decoration:none;padding:1rem 2.5rem;border-radius:8px;font-weight:700;box-shadow:0 4px 15px rgba(59,130,246,0.3);transition:all 0.3s ease;">
+          💳 Procesar Pago Ahora
+        </a>
+      </div>
+      
+      <p style="color:#94a3b8;font-size:0.8rem;text-align:center;margin-top:1rem;">Si tienes problemas con el link, contáctanos a través del chat de la plataforma.</p>
+    </div>${emailFooter()}`,
+    });
+    console.log(`✅ Payment reminder sent to ${data.customerEmail}`);
+  } catch (error) {
+    console.error("❌ Error sending payment reminder:", error);
+  }
+}
+
+/* ═══════════════════════════════════════════════
    CONVENIENCE: Send booking emails
    ═══════════════════════════════════════════════ */
 export async function sendBookingEmails(data: BookingData) {

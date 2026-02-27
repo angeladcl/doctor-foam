@@ -167,6 +167,28 @@ export default function ReservasPage() {
         } catch { alert("Error"); }
     };
 
+    const sendPaymentReminder = async () => {
+        if (!session || !detailModal) return;
+        setSaving(true);
+        try {
+            const res = await fetch("/api/admin/checkout-link", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+                body: JSON.stringify({ bookingId: detailModal.id }),
+            });
+            const data = await res.json();
+            if (data.error) {
+                alert(data.error);
+            } else {
+                alert("¡Recordatorio de pago enviado exitosamente al cliente!\n\nLink generado: " + data.url);
+                fetchBookings();
+            }
+        } catch {
+            alert("Error al enviar el recordatorio.");
+        }
+        setSaving(false);
+    };
+
     const sortBy = (field: typeof sortField) => {
         if (sortField === field) setSortDir(d => d === "asc" ? "desc" : "asc");
         else { setSortField(field); setSortDir("asc"); }
@@ -510,6 +532,11 @@ export default function ReservasPage() {
                             {/* Action buttons */}
                             {!editMode && (
                                 <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                                    {detailModal.payment_status === "pending" && (
+                                        <button onClick={sendPaymentReminder} disabled={saving} style={{ ...btnStyle, flex: "1 1 100%", background: "#fef3c7", color: "#d97706", border: "1px solid #fde68a" }}>
+                                            {saving ? "Enviando..." : "📧 Enviar Enlace de Pago Automatico"}
+                                        </button>
+                                    )}
                                     <button onClick={() => { setDetailModal(null); }} style={{ ...btnStyle, flex: 2, background: "#f8fafc", color: "#475569" }}>Cerrar</button>
                                     <button onClick={startEdit} style={{ ...btnStyle, flex: 1, background: "#eff6ff", color: "#2563eb", border: "1px solid #bfdbfe" }}>✏️ Editar</button>
                                     <button onClick={cancelBooking} style={{ ...btnStyle, flex: 1, background: "#fef2f2", color: "#ef4444", border: "1px solid #fecaca" }}>🚫 Cancelar</button>

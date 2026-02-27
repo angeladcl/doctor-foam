@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
-const supabaseAdmin = createClient(
+const getSupabaseAdmin = () => createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
     try {
         // Get all users from auth
-        const { data: { users }, error } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+        const { data: { users }, error } = await getSupabaseAdmin().auth.admin.listUsers({ perPage: 1000 });
         if (error) throw error;
 
         let filtered = users || [];
@@ -41,12 +41,12 @@ export async function GET(request: NextRequest) {
         }
 
         // Get customer profiles
-        const { data: profiles } = await supabaseAdmin
+        const { data: profiles } = await getSupabaseAdmin()
             .from("customer_profiles")
             .select("*");
 
         // Get admin profiles (profit share + display role)
-        const { data: adminProfiles } = await supabaseAdmin
+        const { data: adminProfiles } = await getSupabaseAdmin()
             .from("admin_profiles")
             .select("*");
 
@@ -103,7 +103,7 @@ export async function PATCH(request: NextRequest) {
         if (display_role) updateData.display_role = display_role;
         if (profit_share_pct !== undefined) updateData.profit_share_pct = Number(profit_share_pct);
 
-        const { error } = await supabaseAdmin
+        const { error } = await getSupabaseAdmin()
             .from("admin_profiles")
             .upsert(updateData, { onConflict: "id" });
 

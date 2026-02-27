@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import crypto from "crypto";
 
-const supabaseAdmin = createClient(
+const getSupabaseAdmin = () => createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     const admin = await verifyAdmin(request);
     if (!admin) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
 
-    const { data, error } = await supabaseAdmin
+    const { data, error } = await getSupabaseAdmin()
         .from("invitations")
         .select("*")
         .order("created_at", { ascending: false });
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if already invited
-    const { data: existing } = await supabaseAdmin
+    const { data: existing } = await getSupabaseAdmin()
         .from("invitations")
         .select("id")
         .eq("email", email.toLowerCase())
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     const token = crypto.randomBytes(32).toString("hex");
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-    const { error: insertError } = await supabaseAdmin
+    const { error: insertError } = await getSupabaseAdmin()
         .from("invitations")
         .insert({
             email: email.toLowerCase(),
@@ -126,7 +126,7 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ error: "ID requerido" }, { status: 400 });
 
-    const { error } = await supabaseAdmin
+    const { error } = await getSupabaseAdmin()
         .from("invitations")
         .delete()
         .eq("id", id);

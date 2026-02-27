@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest, NextResponse } from "next/server";
 
-const supabaseAdmin = createClient(
+const getSupabaseAdmin = () => createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
@@ -35,7 +35,7 @@ export async function DELETE(
     }
 
     try {
-        const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+        const { error } = await getSupabaseAdmin().auth.admin.deleteUser(userId);
 
         if (error) {
             console.error("[admin/users DELETE] Supabase auth error:", error);

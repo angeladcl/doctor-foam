@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseAdmin = createClient(
+const getSupabaseAdmin = () => createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Verify invitation
-        const { data: invitation, error: invError } = await supabaseAdmin
+        const { data: invitation, error: invError } = await getSupabaseAdmin()
             .from("invitations")
             .select("*")
             .eq("token", token)
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
         // Check expiration
         if (new Date(invitation.expires_at) < new Date()) {
-            await supabaseAdmin
+            await getSupabaseAdmin()
                 .from("invitations")
                 .update({ status: "expired" })
                 .eq("id", invitation.id);
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Create user via GoTrue
-        const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        const { data: newUser, error: createError } = await getSupabaseAdmin().auth.admin.createUser({
             email: email.toLowerCase(),
             password,
             email_confirm: true,
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
         // If customer, create customer profile
         if (invitation.role === "customer" && newUser.user) {
-            await supabaseAdmin
+            await getSupabaseAdmin()
                 .from("customer_profiles")
                 .upsert({
                     id: newUser.user.id,
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Mark invitation as accepted
-        await supabaseAdmin
+        await getSupabaseAdmin()
             .from("invitations")
             .update({ status: "accepted" })
             .eq("id", invitation.id);

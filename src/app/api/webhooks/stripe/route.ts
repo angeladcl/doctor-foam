@@ -1,6 +1,6 @@
+import { createServerSupabase } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createServerSupabase } from "@/lib/supabase";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {});
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
@@ -131,6 +131,18 @@ export async function POST(request: NextRequest) {
                         });
                     } catch (emailErr) {
                         console.error("Error sending emails:", emailErr);
+                    }
+
+                    // 4. Send Push Notification to Admins
+                    try {
+                        const { sendPushToAdmins } = await import("@/lib/web-push");
+                        await sendPushToAdmins({
+                            title: "💰 ¡Nueva Venta Exclusiva!",
+                            body: `Se ha confirmado el pago de ${booking.customer_name} por $${((booking.total_amount || 0) / 100).toFixed(2)} MXN.`,
+                            url: "/admin/reservas",
+                        });
+                    } catch (pushErr) {
+                        console.error("Error sending push to admins:", pushErr);
                     }
                 }
             }
