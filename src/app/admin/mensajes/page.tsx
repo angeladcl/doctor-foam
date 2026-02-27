@@ -41,7 +41,17 @@ export default function AdminMensajes() {
     const [sending, setSending] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [mobileView, setMobileView] = useState<"list" | "chat">("list");
+    const [guestTyping, setGuestTyping] = useState(false);
+
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+    const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+        };
+    }, []);
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data }) => {
@@ -141,8 +151,10 @@ export default function AdminMensajes() {
     useEffect(() => {
         if (!selectedConv) return;
         const table = activeTab === "invitados" ? "guest_messages" : "chat_messages";
-        const channel = supabase
-            .channel(`msg-${selectedConv.id}`)
+        const channel = supabase.channel(`chat_${selectedConv.id}`);
+        channelRef.current = channel;
+
+        channel
             .on(
                 "postgres_changes",
                 { event: "INSERT", schema: "public", table, filter: `conversation_id=eq.${selectedConv.id}` },
@@ -152,6 +164,10 @@ export default function AdminMensajes() {
                         if (prev.some(m => m.id === msg.id)) return prev;
                         return [...prev, msg];
                     });
+
+                    // Clear typing indicator
+                    setGuestTyping(false);
+
                     // Auto-mark as read
                     const otherRole = activeTab === "invitados" ? "guest" : "customer";
                     if (msg.sender_role === otherRole && session) {
@@ -167,8 +183,26 @@ export default function AdminMensajes() {
                     }
                 }
             )
+            .on(
+                "broadcast",
+                { event: "typing" },
+                (payload) => {
+                    const expectedRole = activeTab === "invitados" ? "guest" : "customer";
+                    if (payload.payload.role === expectedRole) {
+                        setGuestTyping(payload.payload.isTyping);
+                        if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+                        if (payload.payload.isTyping) {
+                            typingTimeoutRef.current = setTimeout(() => setGuestTyping(false), 5000);
+                        }
+                    }
+                }
+            )
             .subscribe();
-        return () => { supabase.removeChannel(channel); };
+
+        return () => {
+            supabase.removeChannel(channel);
+            channelRef.current = null;
+        };
     }, [selectedConv, session, activeTab]);
 
     // Auto-scroll
@@ -514,6 +548,25 @@ export default function AdminMensajes() {
                                         );
                                     })
                                 )}
+                                {guestTyping && (
+                                    <div style={{
+                                        display: "flex", justifyContent: "flex-start",
+                                        marginBottom: "0.75rem",
+                                    }}>
+                                        <div style={{
+                                            padding: "0.7rem 1rem",
+                                            borderRadius: "1rem 1rem 1rem 0.25rem",
+                                            background: "#ffffff",
+                                            color: "#0f172a", fontSize: "0.85rem",
+                                            border: "1px solid #e2e8f0",
+                                            display: "flex", gap: "4px", alignItems: "center"
+                                        }}>
+                                            <span style={{ animation: "adminChatBounce 1s infinite", animationDelay: "0s" }}>.</span>
+                                            <span style={{ animation: "adminChatBounce 1s infinite", animationDelay: "0.2s" }}>.</span>
+                                            <span style={{ animation: "adminChatBounce 1s infinite", animationDelay: "0.4s" }}>.</span>
+                                        </div>
+                                    </div>
+                                )}
                                 <div ref={messagesEndRef} />
                             </div>
 
@@ -526,7 +579,16 @@ export default function AdminMensajes() {
                             }}>
                                 <input
                                     value={newMessage}
-                                    onChange={e => setNewMessage(e.target.value)}
+                                    onChange={e => {
+                                        setNewMessage(e.target.value);
+                                        if (channelRef.current) {
+                                            channelRef.current.send({
+                                                type: 'broadcast',
+                                                event: 'typing',
+                                                payload: { role: 'admin', isTyping: e.target.value.trim().length > 0 }
+                                            }).catch(() => { });
+                                        }
+                                    }}
                                     onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
                                     placeholder="Escribe un mensaje..."
                                     style={{
@@ -591,6 +653,10 @@ export default function AdminMensajes() {
                     .msg-back-btn {
                         display: block !important;
                     }
+                }
+                @keyframes adminChatBounce {
+                    0%, 100% { transform: translateY(0); opacity: 0.5; }
+                    50% { transform: translateY(-3px); opacity: 1; }
                 }
             `}</style>
         </AdminLayout>

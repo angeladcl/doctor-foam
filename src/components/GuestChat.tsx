@@ -1,5 +1,6 @@
 "use client";
 
+import { supabase } from "@/lib/supabase";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
@@ -38,10 +39,17 @@ function GuestChatInner() {
     const [sending, setSending] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const [hasConversation, setHasConversation] = useState(false);
+    const [conversationId, setConversationId] = useState<string | null>(null);
+    const [adminTyping, setAdminTyping] = useState(false);
+
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const openRef = useRef(open);
+    const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+    const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const sessionId = typeof window !== "undefined" ? getSessionId() : "";
+
+    useEffect(() => { openRef.current = open; }, [open]);
 
     const fetchMessages = useCallback(async () => {
         if (!sessionId) return;
@@ -51,6 +59,7 @@ function GuestChatInner() {
                 const data = await res.json();
                 if (data.conversation) {
                     setHasConversation(true);
+                    setConversationId(data.conversation.id);
                     setShowIntro(false);
                     setMessages(data.messages || []);
                     // Count unread admin messages
@@ -76,18 +85,58 @@ function GuestChatInner() {
         }
     }, [searchParams]);
 
-    // Initial fetch + polling
+    // Initial fetch
     useEffect(() => {
         fetchMessages();
     }, [fetchMessages]);
 
+    // Real-time subscription
     useEffect(() => {
-        if (open) {
-            pollRef.current = setInterval(fetchMessages, 10000);
-            setUnreadCount(0);
+        if (!conversationId) return;
+
+        const channel = supabase.channel(`chat_${conversationId}`);
+        channelRef.current = channel;
+
+        channel
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'guest_messages', filter: `conversation_id=eq.${conversationId}` }, (payload) => {
+                const newMsg = payload.new as GuestMessage;
+                setMessages(prev => {
+                    if (prev.find(m => m.id === newMsg.id)) return prev;
+                    return [...prev, newMsg];
+                });
+                if (newMsg.sender_role === 'admin') {
+                    setAdminTyping(false);
+                    if (!openRef.current) setUnreadCount(c => c + 1);
+                }
+            })
+            .on('broadcast', { event: 'typing' }, (payload) => {
+                if (payload.payload.role === 'admin') {
+                    setAdminTyping(payload.payload.isTyping);
+                    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+                    if (payload.payload.isTyping) {
+                        typingTimeoutRef.current = setTimeout(() => setAdminTyping(false), 5000);
+                    }
+                }
+            })
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+            channelRef.current = null;
+        };
+    }, [conversationId]);
+
+    // Cleanup timeouts
+    useEffect(() => {
+        return () => {
+            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
         }
-        return () => { if (pollRef.current) clearInterval(pollRef.current); };
-    }, [open, fetchMessages]);
+    }, []);
+
+    // Clear unread on open
+    useEffect(() => {
+        if (open) setUnreadCount(0);
+    }, [open]);
 
     // Auto-scroll
     useEffect(() => {
@@ -316,6 +365,24 @@ function GuestChatInner() {
                                         </div>
                                     );
                                 })}
+                                {adminTyping && (
+                                    <div style={{
+                                        display: "flex", justifyContent: "flex-start",
+                                        marginBottom: "0.6rem",
+                                    }}>
+                                        <div style={{
+                                            padding: "0.6rem 0.85rem",
+                                            borderRadius: "0.85rem 0.85rem 0.85rem 0.2rem",
+                                            background: "rgba(255,255,255,0.08)",
+                                            color: "#e2e8f0", fontSize: "0.85rem",
+                                            display: "flex", gap: "4px", alignItems: "center"
+                                        }}>
+                                            <span style={{ animation: "guestChatBounce 1s infinite", animationDelay: "0s" }}>.</span>
+                                            <span style={{ animation: "guestChatBounce 1s infinite", animationDelay: "0.2s" }}>.</span>
+                                            <span style={{ animation: "guestChatBounce 1s infinite", animationDelay: "0.4s" }}>.</span>
+                                        </div>
+                                    </div>
+                                )}
                                 <div ref={messagesEndRef} />
                             </div>
 
@@ -327,7 +394,16 @@ function GuestChatInner() {
                             }}>
                                 <input
                                     value={input}
-                                    onChange={e => setInput(e.target.value)}
+                                    onChange={e => {
+                                        setInput(e.target.value);
+                                        if (channelRef.current && hasConversation) {
+                                            channelRef.current.send({
+                                                type: 'broadcast',
+                                                event: 'typing',
+                                                payload: { role: 'guest', isTyping: e.target.value.trim().length > 0 }
+                                            });
+                                        }
+                                    }}
                                     onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage()}
                                     placeholder="Escribe un mensaje..."
                                     style={{
@@ -365,6 +441,10 @@ function GuestChatInner() {
                 @keyframes guestChatSlideIn {
                     from { transform: translateY(20px) scale(0.95); opacity: 0; }
                     to { transform: translateY(0) scale(1); opacity: 1; }
+                }
+                @keyframes guestChatBounce {
+                    0%, 100% { transform: translateY(0); opacity: 0.5; }
+                    50% { transform: translateY(-3px); opacity: 1; }
                 }
             `}</style>
         </>
