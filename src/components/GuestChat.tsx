@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 type GuestMessage = {
     id: string;
@@ -24,7 +24,7 @@ function getSessionId(): string {
 // Paths where guest chat should NOT appear
 const HIDDEN_PATHS = ["/admin", "/mi-cuenta/chat"];
 
-export default function GuestChat() {
+function GuestChatInner() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const shouldHide = HIDDEN_PATHS.some((p) => pathname.startsWith(p));
@@ -355,6 +355,14 @@ export default function GuestChat() {
                 }
             `}</style>
         </>
+    );
+}
+
+export default function GuestChat() {
+    return (
+        <Suspense fallback={null}>
+            <GuestChatInner />
+        </Suspense>
     );
 }
 
