@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { PACKAGES, PREMIUM_ZONES, VEHICLE_SIZES } from "@/lib/packages";
 import Link from "next/link";
-import { PACKAGES, VEHICLE_SIZES, PREMIUM_ZONES } from "@/lib/packages";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState } from "react";
 
 /* ─── Re-export for component use (aligned shapes) ─── */
 const packagesData = Object.fromEntries(
@@ -564,7 +564,7 @@ function BookingForm() {
             {/* Chat */}
             <div style={{ textAlign: "center", marginTop: "2rem" }}>
                 <p style={{ color: "#94a3b8", fontSize: "0.9rem", marginBottom: "0.75rem" }}>¿Tienes dudas?</p>
-                <a href="/mi-cuenta/chat" className="btn-outline" style={{ display: "inline-flex" }}>
+                <a href="?chat=open" className="btn-outline" style={{ display: "inline-flex" }}>
                     💬 Escríbenos por chat
                 </a>
             </div>

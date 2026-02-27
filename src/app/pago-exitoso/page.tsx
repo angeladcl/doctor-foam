@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 function SuccessContent() {
     const searchParams = useSearchParams();
@@ -198,7 +198,7 @@ function SuccessContent() {
                             <Link href="/" className="btn-premium">
                                 Volver al inicio
                             </Link>
-                            <Link href="/mi-cuenta/chat" className="btn-outline">
+                            <Link href="?chat=open" className="btn-outline">
                                 💬 Ir al chat
                             </Link>
                         </div>

@@ -1062,7 +1062,7 @@ export default function HomePage() {
               <Link href="/reservar" className="btn-premium">
                 💳 Reservar y Pagar en Línea
               </Link>
-              <Link href="/mi-cuenta/chat" className="btn-outline">
+              <Link href="?chat=open" className="btn-outline">
                 💬 Chat para dudas
               </Link>
             </div>
@@ -1106,7 +1106,7 @@ export default function HomePage() {
           <div>
             <h4 className="footer-title">Contacto</h4>
             <ul className="footer-links">
-              <li><Link href="/mi-cuenta/chat">Chat en línea</Link></li>
+              <li><Link href="?chat=open">Chat en línea</Link></li>
               <li><a href="tel:+5215500000000">+52 55 0000 0000</a></li>
               <li><a href="mailto:hola@doctorfoam.mx">hola@doctorfoam.mx</a></li>
               <li><a href="https://instagram.com/doctorfoam.mx">Instagram</a></li>

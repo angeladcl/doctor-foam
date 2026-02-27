@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 type GuestMessage = {
@@ -26,6 +26,7 @@ const HIDDEN_PATHS = ["/admin", "/mi-cuenta/chat"];
 
 export default function GuestChat() {
     const pathname = usePathname();
+    const searchParams = useSearchParams();
     const shouldHide = HIDDEN_PATHS.some((p) => pathname.startsWith(p));
 
     const [open, setOpen] = useState(false);
@@ -64,16 +65,16 @@ export default function GuestChat() {
 
     // Auto-open from URL param (?chat=open) — for Google Maps messaging link
     useEffect(() => {
-        if (typeof window === "undefined") return;
-        const params = new URLSearchParams(window.location.search);
-        if (params.get("chat") === "open") {
+        if (searchParams?.get("chat") === "open") {
             setOpen(true);
             // Clean the URL param without reload
-            const url = new URL(window.location.href);
-            url.searchParams.delete("chat");
-            window.history.replaceState({}, "", url.pathname + url.search);
+            if (typeof window !== "undefined") {
+                const url = new URL(window.location.href);
+                url.searchParams.delete("chat");
+                window.history.replaceState({}, "", url.pathname + url.search);
+            }
         }
-    }, []);
+    }, [searchParams]);
 
     // Initial fetch + polling
     useEffect(() => {
