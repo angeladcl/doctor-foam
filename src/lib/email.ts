@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const getResend = () => new Resend(process.env.RESEND_API_KEY);
 
 const FROM_EMAIL = "Doctor Foam <info@drfoam.com.mx>";
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "info@drfoam.com.mx";
@@ -78,7 +78,7 @@ export async function sendWelcomeEmail(data: WelcomeData) {
   const firstName = customerName.split(" ")[0];
 
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM_EMAIL,
       to: customerEmail,
       subject: `🎉 Bienvenido a Doctor Foam, ${firstName}`,
@@ -121,7 +121,7 @@ export async function sendBookingConfirmation(data: BookingData) {
   const firstName = customerName.split(" ")[0];
 
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM_EMAIL,
       to: customerEmail,
       subject: `✅ Tu servicio ${packageName} está confirmado — Doctor Foam`,
@@ -168,7 +168,7 @@ export async function sendAdminNotification(data: BookingData) {
   const { customerName, customerEmail, customerPhone, packageName, serviceDate, vehicleInfo, vehicleSize, address, totalAmount, source } = data;
 
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM_EMAIL,
       to: ADMIN_EMAIL,
       subject: `🆕 Nueva reserva: ${packageName} — ${customerName}`,
@@ -208,7 +208,7 @@ export async function sendChatNotification(data: ChatNotificationData) {
   const firstName = recipientName.split(" ")[0];
 
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM_EMAIL,
       to: recipientEmail,
       subject: `💬 Nuevo mensaje de ${senderName} — Doctor Foam`,
@@ -237,7 +237,7 @@ export async function sendServiceReminder(data: { customerName: string; customer
   const firstName = data.customerName.split(" ")[0];
 
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM_EMAIL,
       to: data.customerEmail,
       subject: `⏰ Tu servicio es mañana — Doctor Foam`,
@@ -281,7 +281,7 @@ export async function sendPaymentReminderEmail(data: {
   paymentLink: string;
 }) {
   try {
-    await resend.emails.send({
+    await getResend().emails.send({
       from: FROM_EMAIL,
       to: data.customerEmail,
       subject: `[RECORDATORIO] Pago pendiente de servicio - Doctor Foam`,

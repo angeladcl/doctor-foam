@@ -3,7 +3,7 @@ import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const getResend = () => new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
     const resetLink = `${siteUrl}/restablecer-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
-    const { data: emailData, error: emailError } = await resend.emails.send({
+    const { data: emailData, error: emailError } = await getResend().emails.send({
       from: "Doctor Foam <info@drfoam.com.mx>",
       to: email,
       subject: "🔑 Restablecer tu contraseña — Doctor Foam",

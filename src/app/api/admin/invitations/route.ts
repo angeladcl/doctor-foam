@@ -8,7 +8,7 @@ const getSupabaseAdmin = () => createClient(
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const getResend = () => new Resend(process.env.RESEND_API_KEY);
 
 async function verifyAdmin(request: NextRequest) {
     const authHeader = request.headers.get("authorization");
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     const roleLabel = role === "admin" ? "Administrador" : "Cliente";
 
     try {
-        await resend.emails.send({
+        await getResend().emails.send({
             from: "Doctor Foam <noreply@drfoam.com.mx>",
             to: email.toLowerCase(),
             subject: `Invitación a Doctor Foam — ${roleLabel}`,
