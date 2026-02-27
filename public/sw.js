@@ -1,4 +1,4 @@
-const CACHE_NAME = "doctor-foam-v2";
+const CACHE_NAME = "doctor-foam-v3";
 const STATIC_ASSETS = [
     "/",
     "/login",

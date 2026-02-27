@@ -1,7 +1,7 @@
+import { PACKAGES, calculatePrice, getVehicleSizeLabel } from "@/lib/packages";
+import { createServerSupabase } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createServerSupabase } from "@/lib/supabase";
-import { PACKAGES, SIZE_COEFFICIENTS, calculatePrice, getVehicleSizeLabel } from "@/lib/packages";
 
 const getStripe = () => new Stripe(process.env.STRIPE_SECRET_KEY || "", {});
 
@@ -53,10 +53,30 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "La fecha seleccionada ya no está disponible" }, { status: 409 });
         }
 
+        // Check for membership discount
+        let isMember = false;
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            const { data: memberData } = await supabase
+                .from("bookings")
+                .select("id")
+                .eq("customer_id", user.id)
+                .neq("payment_status", "cancelled")
+                .ilike("package_name", "%Membres%");
+
+            if (memberData && memberData.length > 0) {
+                isMember = true;
+            }
+        }
+
         // Calculate price with vehicle size coefficient
-        const totalCentavos = calculatePrice(packageId, vehicleSize);
-        const vehicleSizeLabel = getVehicleSizeLabel(vehicleSize);
+        let totalCentavos = calculatePrice(packageId, vehicleSize);
         const isSubscription = !!pkg.isSubscription;
+        if (isMember && !isSubscription) {
+            totalCentavos = Math.round(totalCentavos * 0.9);
+        }
+
+        const vehicleSizeLabel = getVehicleSizeLabel(vehicleSize);
 
         // Create Stripe Checkout Session
         const session = await getStripe().checkout.sessions.create({
@@ -69,7 +89,7 @@ export async function POST(request: NextRequest) {
                     price_data: {
                         currency: "mxn",
                         product_data: {
-                            name: pkg.name,
+                            name: pkg.name + (isMember && !isSubscription ? " (10% Desc. Miembro)" : ""),
                             description: `${pkg.description} | ${vehicleSizeLabel} | Fecha: ${serviceDate}`,
                             metadata: { packageId, vehicleSize },
                         },

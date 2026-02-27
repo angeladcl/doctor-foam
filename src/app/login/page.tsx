@@ -1,5 +1,6 @@
 "use client";
 
+import Logo from "@/components/Logo";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -30,7 +31,9 @@ export default function CustomerLoginPage() {
         } else {
             const { data: { user } } = await supabase.auth.getUser();
             if (user?.app_metadata?.role === "admin") {
-                router.push("/admin");
+                await supabase.auth.signOut();
+                setError("Acceso denegado. Para entrar al panel debes usar el link de Panel Administrativo.");
+                setLoading(false);
             } else {
                 router.push("/mi-cuenta");
             }
@@ -70,9 +73,7 @@ export default function CustomerLoginPage() {
                 {/* Logo */}
                 <div style={{ textAlign: "center", marginBottom: "2rem" }}>
                     <Link href="/" style={{ textDecoration: "none" }}>
-                        <h1 style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "1.5rem", color: "white", margin: 0 }}>
-                            DOCTOR <span className="gradient-text">FOAM</span>
-                        </h1>
+                        <Logo size="lg" />
                     </Link>
                     <p style={{ color: "#64748b", fontSize: "0.85rem", marginTop: "0.5rem" }}>
                         {mode === "login" ? "Inicia sesión en tu cuenta" : "Restablecer contraseña"}
@@ -156,9 +157,12 @@ export default function CustomerLoginPage() {
 
                 {/* Divider */}
                 <div style={{ borderTop: "1px solid rgba(96, 165, 250, 0.1)", marginTop: "1.5rem", paddingTop: "1rem", textAlign: "center" }}>
-                    <p style={{ color: "#475569", fontSize: "0.8rem" }}>
+                    <p style={{ color: "#475569", fontSize: "0.8rem", marginBottom: "0.75rem" }}>
                         ¿Aún no tienes cuenta? <Link href="/reservar" style={{ color: "#60a5fa" }}>Reserva tu primer servicio</Link> y se creará automáticamente.
                     </p>
+                    <Link href="/admin/login" style={{ color: "#475569", fontSize: "0.75rem", textDecoration: "none", opacity: 0.7, transition: "opacity 0.2s" }} onMouseEnter={e => e.currentTarget.style.opacity = "1"} onMouseLeave={e => e.currentTarget.style.opacity = "0.7"}>
+                        Acceso Administradores
+                    </Link>
                 </div>
             </div>
         </div>

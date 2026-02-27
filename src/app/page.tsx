@@ -450,7 +450,8 @@ export default function HomePage() {
             <li><a href="#precios">Precios</a></li>
             <li><a href="#cobertura">Cobertura</a></li>
             <li><a href="#proceso">Proceso</a></li>
-            <li><a href="#faq">FAQ</a></li>
+            <li><a href="#faq">Dudas frecuentes</a></li>
+            <li><a href="#membresia">Membresía</a></li>
             <li><Link href="/blog">Blog</Link></li>
             <li>
               <Link href="/mi-cuenta" style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: "#94a3b8", textDecoration: "none", fontSize: "0.9rem", fontWeight: 500, transition: "color 0.2s" }}>
@@ -501,7 +502,8 @@ export default function HomePage() {
         <a href="#precios" onClick={() => setMobileMenuOpen(false)}>Precios</a>
         <a href="#cobertura" onClick={() => setMobileMenuOpen(false)}>Cobertura</a>
         <a href="#proceso" onClick={() => setMobileMenuOpen(false)}>Proceso</a>
-        <a href="#faq" onClick={() => setMobileMenuOpen(false)}>FAQ</a>
+        <a href="#faq" onClick={() => setMobileMenuOpen(false)}>Dudas frecuentes</a>
+        <a href="#membresia" onClick={() => setMobileMenuOpen(false)}>Membresía</a>
         <Link href="/blog" onClick={() => setMobileMenuOpen(false)}>Blog</Link>
         <Link href="/mi-cuenta" onClick={() => setMobileMenuOpen(false)} style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
@@ -741,7 +743,7 @@ export default function HomePage() {
       </section>
 
       {/* ─── PAGO RECURRENTE ─── */}
-      <section className="section-padding" id="recurrente">
+      <section className="section-padding" id="membresia">
         <div className="container" style={{ textAlign: "center" }}>
           {/* ─── Subscription Plans ─── */}
           <div style={{ marginTop: "3rem" }}>

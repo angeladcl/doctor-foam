@@ -31,7 +31,9 @@ export default function AdminLoginPage() {
                 router.push("/admin");
             } else {
                 // If it's a customer logging in through the admin portal
-                router.push("/mi-cuenta");
+                await supabase.auth.signOut();
+                setError("Acceso denegado. Este portal es exclusivo para administradores.");
+                setLoading(false);
             }
         }
     };

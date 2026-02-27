@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import Link from "next/link";
+import InstallPrompt from "@/components/InstallPrompt";
 import { supabase } from "@/lib/supabase";
 import type { User } from "@supabase/supabase-js";
-import InstallPrompt from "@/components/InstallPrompt";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
 const NAV_ITEMS = [
     { href: "/mi-cuenta", label: "Inicio", icon: "🏠" },
@@ -77,25 +77,26 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
 
     if (loading) {
         return (
-            <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--color-bg-primary)" }}>
+            <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc" }}>
                 <div style={{ textAlign: "center" }}>
                     <div style={{ fontSize: "2rem", marginBottom: "1rem" }}>🚗</div>
-                    <p style={{ color: "#94a3b8" }}>Cargando...</p>
+                    <p style={{ color: "#64748b" }}>Cargando...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div style={{ minHeight: "100vh", background: "var(--color-bg-primary)", display: "flex" }}>
+        <div style={{ minHeight: "100vh", background: "#f8fafc", display: "flex" }}>
             {/* Mobile toggle */}
             <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
                 style={{
                     position: "fixed", top: "1rem", left: "1rem", zIndex: 60,
-                    background: "rgba(15,34,64,0.95)", border: "1px solid rgba(96,165,250,0.2)",
-                    borderRadius: "0.5rem", color: "white", padding: "0.5rem 0.75rem",
+                    background: "white", border: "1px solid #e2e8f0",
+                    borderRadius: "0.5rem", color: "#0f172a", padding: "0.5rem 0.75rem",
                     cursor: "pointer", display: "none", fontSize: "1.2rem",
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
                 }}
                 className="portal-menu-btn"
             >
@@ -106,14 +107,14 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
             <aside
                 className={`portal-sidebar ${sidebarOpen ? "open" : ""}`}
                 style={{
-                    width: "260px", minHeight: "100vh", background: "rgba(15,34,64,0.6)",
-                    borderRight: "1px solid rgba(96,165,250,0.1)", display: "flex",
+                    width: "260px", minHeight: "100vh", background: "white",
+                    borderRight: "1px solid #e2e8f0", display: "flex",
                     flexDirection: "column", position: "fixed", left: 0, top: 0, zIndex: 50,
                 }}
             >
                 {/* Logo */}
-                <Link href="/" style={{ textDecoration: "none", padding: "1.5rem", display: "block", borderBottom: "1px solid rgba(96,165,250,0.1)" }}>
-                    <h1 style={{ margin: 0, color: "white", fontSize: "1.1rem", fontFamily: "var(--font-heading)", letterSpacing: "2px" }}>
+                <Link href="/" style={{ textDecoration: "none", padding: "1.5rem", display: "block", borderBottom: "1px solid #e2e8f0" }}>
+                    <h1 style={{ margin: 0, color: "#0f172a", fontSize: "1.1rem", fontFamily: "var(--font-heading)", letterSpacing: "2px" }}>
                         DOCTOR <span className="gradient-text">FOAM</span>
                     </h1>
                     <p style={{ color: "#64748b", fontSize: "0.7rem", margin: "0.25rem 0 0" }}>Mi cuenta</p>
@@ -132,13 +133,13 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                                     display: "flex", alignItems: "center", gap: "0.75rem",
                                     padding: "0.75rem 1rem", borderRadius: "0.5rem", marginBottom: "0.25rem",
                                     textDecoration: "none", fontSize: "0.9rem", transition: "all 0.2s",
-                                    background: isActive ? "rgba(59,130,246,0.15)" : "transparent",
-                                    color: isActive ? "#60a5fa" : "#94a3b8",
+                                    background: isActive ? "#eff6ff" : "transparent",
+                                    color: isActive ? "#2563eb" : "#475569",
                                     borderLeft: isActive ? "3px solid #3b82f6" : "3px solid transparent",
                                 }}
                             >
                                 <span>{item.icon}</span>
-                                <span style={{ fontWeight: isActive ? 600 : 400 }}>{item.label}</span>
+                                <span style={{ fontWeight: isActive ? 600 : 500 }}>{item.label}</span>
                                 {item.href === "/mi-cuenta/chat" && unreadCount > 0 && (
                                     <span style={{
                                         marginLeft: "auto", background: "#ef4444", color: "white",
@@ -154,7 +155,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                 </nav>
 
                 {/* User info + logout */}
-                <div style={{ padding: "1rem", borderTop: "1px solid rgba(96,165,250,0.1)" }}>
+                <div style={{ padding: "1rem", borderTop: "1px solid #e2e8f0" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
                         <div style={{
                             width: "36px", height: "36px", borderRadius: "50%",
@@ -165,7 +166,7 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                             {(user?.user_metadata?.full_name || user?.email || "?")[0].toUpperCase()}
                         </div>
                         <div style={{ flex: 1, overflow: "hidden" }}>
-                            <p style={{ color: "white", fontSize: "0.8rem", margin: 0, fontWeight: 600, textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>
+                            <p style={{ color: "#0f172a", fontSize: "0.8rem", margin: 0, fontWeight: 600, textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>
                                 {user?.user_metadata?.full_name || "Cliente"}
                             </p>
                             <p style={{ color: "#64748b", fontSize: "0.7rem", margin: 0, textOverflow: "ellipsis", whiteSpace: "nowrap", overflow: "hidden" }}>
@@ -177,8 +178,9 @@ export default function PortalLayout({ children }: { children: React.ReactNode }
                         onClick={handleLogout}
                         style={{
                             width: "100%", padding: "0.5rem", borderRadius: "0.5rem",
-                            border: "1px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.05)",
-                            color: "#f87171", cursor: "pointer", fontSize: "0.8rem",
+                            border: "1px solid rgba(239,68,68,0.2)", background: "#fef2f2",
+                            color: "#ef4444", cursor: "pointer", fontSize: "0.8rem",
+                            fontWeight: 500
                         }}
                     >
                         Cerrar sesión

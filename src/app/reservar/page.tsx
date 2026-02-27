@@ -16,6 +16,8 @@ const vehicleSizes = VEHICLE_SIZES;
 
 const premiumZones = PREMIUM_ZONES;
 
+import { supabase } from "@/lib/supabase";
+
 /* ─── Calendar Component ─── */
 function Calendar({
     selectedDate,
@@ -204,6 +206,7 @@ function BookingForm() {
     const [error, setError] = useState("");
     const cancelled = searchParams.get("cancelled");
     const [hoveredPkg, setHoveredPkg] = useState<string | null>(null);
+    const [isMember, setIsMember] = useState(false);
 
     /* Form fields — pre-fill from query params if available */
     const [customerName, setCustomerName] = useState(searchParams.get("nombre") || "");
@@ -221,11 +224,29 @@ function BookingForm() {
 
     const pkg = packagesData[selectedPackage];
     const coeff = vehicleSizes.find((v) => v.value === vehicleSize)?.coefficient || 1.0;
-    const currentPrice = pkg ? Math.round(pkg.priceBase * coeff) : 0;
+    const basePrice = pkg ? Math.round(pkg.priceBase * coeff) : 0;
+    const currentPrice = isMember ? Math.round(basePrice * 0.9) : basePrice;
 
     useEffect(() => {
         const paquete = searchParams.get("paquete");
         if (paquete && packagesData[paquete]) setSelectedPackage(paquete);
+
+        const checkMembership = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data: memberData } = await supabase
+                .from("bookings")
+                .select("id")
+                .eq("customer_id", user.id)
+                .neq("payment_status", "cancelled")
+                .ilike("package_name", "%Membres%");
+
+            if (memberData && memberData.length > 0) {
+                setIsMember(true);
+            }
+        };
+        checkMembership();
     }, [searchParams]);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -364,8 +385,15 @@ function BookingForm() {
                                             <div style={{ color: "#64748b", fontSize: "0.8rem", marginTop: "0.15rem" }}>{p.label}</div>
                                         </div>
                                     </div>
-                                    <div className="gradient-text" style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "1.2rem", whiteSpace: "nowrap" }}>
-                                        ${p.priceBase.toLocaleString("es-MX")}
+                                    <div style={{ textAlign: "right" }}>
+                                        {isMember && (
+                                            <div style={{ color: "#ef4444", textDecoration: "line-through", fontSize: "0.85rem", fontWeight: 600, marginBottom: "-0.2rem" }}>
+                                                ${p.priceBase.toLocaleString("es-MX")}
+                                            </div>
+                                        )}
+                                        <div className="gradient-text" style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "1.2rem", whiteSpace: "nowrap" }}>
+                                            ${(isMember ? Math.round(p.priceBase * 0.9) : p.priceBase).toLocaleString("es-MX")}
+                                        </div>
                                     </div>
                                 </button>
                             );
@@ -532,8 +560,23 @@ function BookingForm() {
                         ))}
                     </div>
 
+                    {isMember && (
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.75rem 1.25rem", background: "#fef2f2", borderRadius: "0.75rem", marginBottom: "0.75rem", border: "1px solid #fecaca" }}>
+                            <span style={{ fontFamily: "var(--font-heading)", fontWeight: 600, color: "#ef4444", fontSize: "0.95rem" }}>Beneficio Miembro (10% Desc.)</span>
+                            <span style={{ fontFamily: "var(--font-heading)", fontWeight: 700, color: "#ef4444", fontSize: "1.1rem" }}>
+                                -${(basePrice - currentPrice).toLocaleString("es-MX")} MXN
+                            </span>
+                        </div>
+                    )}
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "1rem 1.25rem", background: "rgba(37, 99, 235, 0.06)", borderRadius: "0.75rem", marginBottom: "1.5rem", border: "1px solid rgba(37,99,235,0.1)" }}>
-                        <span style={{ fontFamily: "var(--font-heading)", fontWeight: 700, color: "#0f172a", fontSize: "1.1rem" }}>Total (IVA incluido)</span>
+                        <div>
+                            <span style={{ fontFamily: "var(--font-heading)", fontWeight: 700, color: "#0f172a", fontSize: "1.1rem" }}>Total (IVA incluido)</span>
+                            {isMember && (
+                                <div style={{ color: "#94a3b8", fontSize: "0.8rem", textDecoration: "line-through", marginTop: "0.2rem" }}>
+                                    De: ${basePrice.toLocaleString("es-MX")}
+                                </div>
+                            )}
+                        </div>
                         <span className="gradient-text" style={{ fontFamily: "var(--font-heading)", fontWeight: 800, fontSize: "1.5rem" }}>
                             ${currentPrice.toLocaleString("es-MX")} MXN
                         </span>
