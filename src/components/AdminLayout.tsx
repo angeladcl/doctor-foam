@@ -16,6 +16,7 @@ const NAV_ITEMS = [
     { href: "/admin", label: "Dashboard", icon: "📊" },
     { href: "/admin/reservas", label: "Reservas", icon: "📋" },
     { href: "/admin/servicios", label: "Servicios", icon: "🛠️" },
+    { href: "/admin/cuentas", label: "Liquidaciones", icon: "💰" },
     { href: "/admin/usuarios", label: "Usuarios", icon: "👥" },
     { href: "/admin/invitaciones", label: "Invitaciones", icon: "✉️" },
     { href: "/admin/mensajes", label: "Mensajes", icon: "💬", badgeKey: "unread_messages" as const },
