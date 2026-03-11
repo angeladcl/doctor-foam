@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { PACKAGES, calculatePrice, getVehicleSizeLabel } from "@/lib/packages";
 import { createServerSupabase } from "@/lib/supabase";
 import { NextRequest, NextResponse } from "next/server";

@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+export const dynamic = "force-dynamic";
+
 import { createClient } from "@supabase/supabase-js";
-import { Resend } from "resend";
 import crypto from "crypto";
+import { NextRequest, NextResponse } from "next/server";
+import { Resend } from "resend";
 
 const getSupabaseAdmin = () => createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -83,7 +85,7 @@ export async function POST(request: NextRequest) {
 
     try {
         await getResend().emails.send({
-            from: "Doctor Foam <noreply@drfoam.com.mx>",
+            from: "Doctor Foam <info@drfoam.com.mx>",
             to: email.toLowerCase(),
             subject: `Invitación a Doctor Foam — ${roleLabel}`,
             html: `
