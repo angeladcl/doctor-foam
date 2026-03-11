@@ -1,3 +1,4 @@
+import WhatsAppButton from "@/components/WhatsAppButton";
 import type { Metadata } from "next";
 import { DM_Sans, Outfit } from "next/font/google";
 import "./globals.css";
@@ -85,6 +86,7 @@ export default function RootLayout({
       </head>
       <body>
         {children}
+        <WhatsAppButton />
         <script
           dangerouslySetInnerHTML={{
             __html: `
