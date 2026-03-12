@@ -1112,7 +1112,7 @@ export default function HomePage() {
               <li><a href="tel:+5215500000000">+52 55 0000 0000</a></li>
               <li><a href="mailto:hola@doctorfoam.mx">hola@doctorfoam.mx</a></li>
               <li><a href="https://instagram.com/doctorfoam.mx">Instagram</a></li>
-              <li><a href="https://facebook.com/doctorfoam.mx">Facebook</a></li>
+              <li><a href="https://www.facebook.com/profile.php?id=61583655190954">Facebook</a></li>
             </ul>
           </div>
         </div>
