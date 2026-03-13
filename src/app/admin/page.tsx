@@ -561,7 +561,7 @@ export default function AdminDashboardPage() {
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                                     <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} dy={10} />
                                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} tickFormatter={(value) => `$${value}`} />
-                                    <Tooltip contentStyle={{ borderRadius: "0.5rem", border: "none", boxShadow: "0 4px 15px rgba(0,0,0,0.1)" }} formatter={(value: number) => [`$${value.toLocaleString("es-MX")}`, 'Ingresos']} />
+                                    <Tooltip contentStyle={{ borderRadius: "0.5rem", border: "none", boxShadow: "0 4px 15px rgba(0,0,0,0.1)" }} formatter={(value: any) => [`$${Number(value).toLocaleString("es-MX")}`, 'Ingresos'] as any} />
                                     <Area type="monotone" dataKey="ingresos" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
                                 </AreaChart>
                             </ResponsiveContainer>
@@ -577,7 +577,7 @@ export default function AdminDashboardPage() {
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} dy={10} />
                                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} allowDecimals={false} />
-                                    <Tooltip cursor={{ fill: 'rgba(99, 179, 237, 0.1)' }} contentStyle={{ borderRadius: "0.5rem", border: "none", boxShadow: "0 4px 15px rgba(0,0,0,0.1)" }} formatter={(value: number) => [value, 'Reservas']} />
+                                    <Tooltip cursor={{ fill: 'rgba(99, 179, 237, 0.1)' }} contentStyle={{ borderRadius: "0.5rem", border: "none", boxShadow: "0 4px 15px rgba(0,0,0,0.1)" }} formatter={(value: any) => [value, 'Reservas'] as any} />
                                     <Bar dataKey="reservas" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
